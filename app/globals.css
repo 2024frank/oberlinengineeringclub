@@ -317,3 +317,6 @@ body{font-family:var(--font-body-stack)}
 .tools-note{margin-top:2.5rem;max-width:60rem}
 .tools-note p{margin:0 0 .8rem}
 .tools-note p:last-child{margin-bottom:0}
+/* Tags sitting on dark heroes were light chips with inherited white text —
+   unreadable. On ink surfaces they become hairline chips with light text. */
+.detail-hero .tag-row span,.directory-hero .tag-row span{background:rgba(252,247,241,.1);color:#f0e9dd;border:1px solid rgba(252,247,241,.28)}

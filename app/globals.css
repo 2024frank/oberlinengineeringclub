@@ -310,3 +310,10 @@ body{font-family:var(--font-body-stack)}
 .admin-login__intro h1{font-weight:560;letter-spacing:-.02em}
 .admin-login__card label{font-weight:650}
 .admin-login__card button{padding:.95rem 1rem}
+/* Project difficulty chip + pill row; tools note under the project grid. */
+.pill-row{display:flex;flex-wrap:wrap;gap:.4rem}
+.status-pill--difficulty{background:#efe6f5;color:#4b2a66}
+.detail-hero .pill-row{margin-bottom:.4rem}
+.tools-note{margin-top:2.5rem;max-width:60rem}
+.tools-note p{margin:0 0 .8rem}
+.tools-note p:last-child{margin-bottom:0}

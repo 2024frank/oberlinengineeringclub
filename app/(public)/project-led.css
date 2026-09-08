@@ -177,7 +177,7 @@
 .professional-site .save-button { color: var(--oec-charcoal); background: var(--oec-surface); border-color: var(--oec-border); }
 .professional-site .save-button:hover { color: var(--oec-cardinal); background: var(--oec-brand-soft); border-color: var(--oec-cardinal); }
 .professional-site :is(.filter-form input, .filter-form select, .filter-form button) { color: var(--oec-charcoal); background: var(--oec-surface); border-color: var(--oec-input-border); }
-.professional-site :is(.project-home-hero, .home-hero, .detail-hero--image, .public-footer) :is(a, button):focus-visible { outline-color: var(--oec-surface); }
+.professional-site :is(.cms-section--cardinal, .hero, .project-home-hero, .home-hero, .directory-hero--image, .detail-hero--image, .public-footer) :is(a, button, input, select, textarea, summary):focus-visible { outline-color: var(--oec-surface); }
 
 @media (min-width: 1600px) {
   .professional-site .project-home-hero__inner { height: 640px; }

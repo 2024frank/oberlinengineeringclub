@@ -10,7 +10,8 @@ final result: passed for the visual and automated checks listed below
 - Removed the older teal focus rings, gold link hovers, green project markers, and green loading/portrait placeholders. Photos and the original club logo are unchanged. Success feedback retains its semantic green.
 - Computed-color audits covered home, projects, events, About, pathway, resources, opportunities, news, and membership. Home, projects, and membership have matching header/button colors and no horizontal overflow at 320, 390, and 768 pixels; desktop was checked at 1280 pixels.
 - Browser screenshots inspected the homepage, membership selections, focus rings, and phone controls. A selected option uses a pale cardinal tint, and the active step keeps white text on cardinal.
-- Four palette regression tests passed after first reproducing the inconsistent colors. The complete unit-test suite, changed-file ESLint, and production build including TypeScript passed. The database and physical-device limits below still apply.
+- Five palette regression tests passed after first reproducing the inconsistent colors and the missing inverse focus treatment on cardinal CMS sections. The inverse ring covers controls in dark heroes, project spotlights, and the footer; the light join section retains its cardinal ring. Browser keyboard checks confirmed white on the homepage hero and cardinal on the neutral join section.
+- The final complete run passed 237 Vitest tests and 20 Node tests, with eight existing database integration skips. An earlier run alongside the production build hit two interaction timeouts and a subsequent failure; the full rerun with two workers passed without changing those tests or application logic. Changed-file ESLint and the production build including TypeScript passed. The database and physical-device limits below still apply.
 
 ## Visual Evidence
 

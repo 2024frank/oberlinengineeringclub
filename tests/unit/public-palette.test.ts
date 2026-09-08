@@ -29,6 +29,26 @@ describe('public color system', () => {
     expect(definitions).toEqual([])
   })
 
+  it('uses an inverse focus ring for controls on every dark public section', () => {
+    const selectors: string[] = []
+    for (const sheet of styles) sheet.walkRules(rule => {
+      if (!rule.selector.includes(':focus-visible')) return
+      rule.walkDecls('outline-color', declaration => {
+        if (declaration.value === 'var(--oec-surface)') selectors.push(rule.selector.replaceAll(':focus-visible', ''))
+      })
+    })
+    const fixture = document.createElement('div')
+    fixture.className = 'professional-site'
+    for (const surface of ['cms-section--cardinal', 'hero', 'project-home-hero', 'home-hero', 'directory-hero--image', 'detail-hero--image', 'public-footer']) {
+      fixture.innerHTML = `<section class="${surface}"><a href="/projects">Projects</a><button>Join</button><input /><select></select><textarea></textarea><summary>Details</summary></section>`
+      for (const control of fixture.querySelectorAll('a, button, input, select, textarea, summary')) {
+        expect(selectors.some(selector => control.matches(selector)), `${surface} ${control.tagName}`).toBe(true)
+      }
+    }
+    fixture.innerHTML = '<section class="cta-section cta-section--charcoal"><a href="/join">Join</a></section>'
+    expect(selectors.some(selector => fixture.querySelector('a')!.matches(selector))).toBe(false)
+  })
+
   it('keeps brand and muted text readable on white', () => {
     const palette: Record<string, string> = {}
     styles[0].walkDecls(/^--oec-/, declaration => { palette[declaration.prop] = declaration.value })

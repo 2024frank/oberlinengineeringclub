@@ -4,6 +4,14 @@ Date: 2026-09-08
 
 final result: passed for the visual and automated checks listed below
 
+## Color Consistency Follow-up
+
+- Replaced scattered public color values with one palette: cardinal #a21d2b, charcoal #222222, white, and neutral grays. The homepage now uses the same white header and cardinal join button as the inner pages.
+- Removed the older teal focus rings, gold link hovers, green project markers, and green loading/portrait placeholders. Photos and the original club logo are unchanged. Success feedback retains its semantic green.
+- Computed-color audits covered home, projects, events, About, pathway, resources, opportunities, news, and membership. Home, projects, and membership have matching header/button colors and no horizontal overflow at 320, 390, and 768 pixels; desktop was checked at 1280 pixels.
+- Browser screenshots inspected the homepage, membership selections, focus rings, and phone controls. A selected option uses a pale cardinal tint, and the active step keeps white text on cardinal.
+- Four palette regression tests passed after first reproducing the inconsistent colors. The complete unit-test suite, changed-file ESLint, and production build including TypeScript passed. The database and physical-device limits below still apply.
+
 ## Visual Evidence
 
 - Source visual truth: `/Users/kwaku/.codex/generated_images/01a03ab2-4925-7081-a9db-91f365af7a7f/exec-d78530ad-d2e2-479e-a882-c04f82ebf0c6.png` (1003 x 1568 pixels).

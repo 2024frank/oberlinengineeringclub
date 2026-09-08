@@ -6,7 +6,7 @@ The source branch first preserves the previously deployed, uncommitted productio
 
 ## Checks
 
-- Final local production build: 218 Vitest tests and 20 Node tests passed; 20 Chrome/WebKit public browser checks passed. Four authenticated browser checks and eight existing database integration placeholders were skipped. All 18 public-page accessibility scans were clear; the final select-control change was rechecked at all three scan widths.
+- Initial release build: 218 Vitest tests and 20 Node tests passed; 20 Chrome/WebKit public browser checks passed. Four authenticated browser checks and eight existing database integration placeholders were skipped. All 18 public-page accessibility scans were clear; the final select-control change was rechecked at all three scan widths.
 - The membership request dropdown has a tested minimum 44px touch target on WebKit. Route screenshots wait for scrolling to finish and isolate each document to avoid aborting Safari link prefetches during navigation.
 - Unit and Node tests cover the preserved CMS, member workflows, public layout, and project filtering. The eight existing integration placeholders do not exercise a real database.
 - `tests/e2e/professional-release.spec.ts` checks eleven public routes at five widths, image loading, document scrolling, navigation bounds, project search, interest selection, form validation, request review, error recovery, and sign-in availability. Submission requests are intercepted; these checks do not send email or create records.
@@ -18,6 +18,8 @@ The source branch first preserves the previously deployed, uncommitted productio
 The inherited repository-wide lint baseline contains 90 errors. The public redesign introduces no lint errors. Full private-portal acceptance, live email delivery, and database RPC behavior are separate from this visual release's read-only checks.
 
 The final changed-file lint check passes. The production build passes, and `npm audit --audit-level=moderate` reports zero vulnerabilities.
+
+Live verification caught an officer-link prefetch crossing into the separate admin origin. The follow-up uses a deliberate document navigation. It also passes the actual page slug into CMS heroes, preserving interior image/split headings and eyebrows. Four new unit cases bring the total to 222 Vitest tests, with all 20 Node tests still passing. Six targeted Chrome/WebKit workflow checks pass, including the new document-navigation regression.
 
 ## Deployment
 

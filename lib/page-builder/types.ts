@@ -17,6 +17,7 @@ export const pageSnapshotSchema = z.object({
 export type PageSnapshot = z.infer<typeof pageSnapshotSchema>
 
 export type PageRenderContext = {
+  pageSlug?: string
   projects?: Array<Record<string, unknown>>
   events?: Array<Record<string, unknown>>
   opportunities?: Array<Record<string, unknown>>

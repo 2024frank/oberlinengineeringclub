@@ -2,4 +2,4 @@ import { ContentManager } from '@/components/admin/content/ContentManager'
 import { listAdminContent } from '@/lib/cms/adminContent'
 import { requireAdmin } from '@/lib/auth/requireRole'
 import { can } from '@/lib/permissions/can'
-export default async function Page(){const admin=await requireAdmin();const rows=await listAdminContent('projects');const canPublish=can(admin.role,'PUBLISH_CONTENT',admin.scopes,'projects')||(admin.role==='EDITOR'&&admin.canPublish&&admin.scopes.includes('projects'));return <ContentManager entityType="projects" title="Projects" rows={rows} canPublish={canPublish}/>}
+export default async function Page({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){const params=await searchParams;const admin=await requireAdmin();const rows=await listAdminContent('projects');const canPublish=can(admin.role,'PUBLISH_CONTENT',admin.scopes,'projects')||(admin.role==='EDITOR'&&admin.canPublish&&admin.scopes.includes('projects'));return <ContentManager entityType="projects" title="Projects" rows={rows} canPublish={canPublish} initialCreate={params.new==='1'}/>}

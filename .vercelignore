@@ -1,0 +1,15 @@
+.env*
+.git
+.next
+.vercel
+node_modules
+.agents
+.claude
+.codex
+artifacts
+docs/tutorials
+playwright-report
+test-results
+coverage
+*.tsbuildinfo
+design-qa.md

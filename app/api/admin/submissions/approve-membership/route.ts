@@ -13,12 +13,13 @@ export async function POST(request: Request) {
   const s = await createSupabaseServerClient()
   const { data: row, error } = await s.from('submissions').select('id,type,full_name,email,status').eq('id', id).single()
   if (error || !row) return NextResponse.json({ error: 'SUBMISSION_NOT_FOUND' }, { status: 404 })
-  if (row.type !== 'join_club') return NextResponse.json({ error: 'NOT_A_JOIN_REQUEST' }, { status: 400 })
+  if (!['join_club', 'leadership_interest'].includes(row.type)) return NextResponse.json({ error: 'NOT_A_JOIN_REQUEST' }, { status: 400 })
 
   try {
     const origin = new URL(request.url).origin
-    const result = await startMembershipFromSubmission({ email: row.email, displayName: row.full_name }, origin)
-    await s.from('submissions').update({ status: 'approved' }).eq('id', id)
+    const result = await startMembershipFromSubmission({ email: row.email, displayName: row.full_name }, origin, admin.userId)
+    const { error: updateError } = await s.from('submissions').update({ status: 'approved' }).eq('id', id)
+    if (updateError) return NextResponse.json({ error: 'MEMBERSHIP_SAVED_INBOX_UPDATE_FAILED' }, { status: 500 })
     return NextResponse.json({ ok: true, ...result })
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'APPROVE_FAILED' }, { status: 400 })

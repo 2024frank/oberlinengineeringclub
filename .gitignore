@@ -13,4 +13,3 @@ test-results/
 
 # Third-party agent skills installed by tooling; not part of the app.
 .agents/
-.vercel

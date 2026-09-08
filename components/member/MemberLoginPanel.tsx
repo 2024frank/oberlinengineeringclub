@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 
 export function MemberLoginPanel() {
   const router = useRouter()
+  const [mode,setMode] = useState<'password'|'magic'|'reset'|'request'>('password')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   useEffect(() => {
@@ -68,7 +69,8 @@ export function MemberLoginPanel() {
   async function requestMembership(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setBusy('request'); setError(''); setNotice('')
-    const form = new FormData(event.currentTarget)
+    const element=event.currentTarget
+    const form = new FormData(element)
     try {
       const response = await fetch('/api/auth/member/request', {
         method: 'POST', headers: { 'content-type': 'application/json' },
@@ -80,43 +82,22 @@ export function MemberLoginPanel() {
         throw new Error(body.error === 'OBERLIN_EMAIL_REQUIRED' ? 'Use your @oberlin.edu email.' : body.error ?? 'Could not submit membership request.')
       }
       setNotice('Verification email sent. Verify your Oberlin email, then an OEC Admin will review your request.')
-      event.currentTarget.reset()
+      element.reset()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not submit membership request.') }
     finally { setBusy('') }
   }
 
-  return <div className="member-auth-grid">
-    <section className="admin-login__card">
-      <h2>Member sign in</h2>
-      <p>For approved OEC members using an Oberlin email.</p>
-      <form onSubmit={passwordSignIn} className="settings-form">
-        <label>Oberlin email<input name="email" type="email" pattern="[^@]+@oberlin\.edu" autoComplete="username" required /></label>
-        <label>Password<input name="password" type="password" autoComplete="current-password" required /></label>
-        <button type="submit" disabled={Boolean(busy)}>{busy === 'password' ? 'Signing in…' : 'Sign in'}</button>
-      </form>
-      <div className="member-auth-divider"><span>or</span></div>
-      <form onSubmit={magicLink} className="settings-form">
-        <label>Oberlin email<input name="email" type="email" pattern="[^@]+@oberlin\.edu" autoComplete="email" required /></label>
-        <button type="submit" disabled={Boolean(busy)}>{busy === 'magic' ? 'Sending…' : 'Email me a magic link'}</button>
-      </form>
-      <div className="member-auth-divider"><span>password help</span></div>
-      <form onSubmit={passwordReset} className="settings-form">
-        <label>Oberlin email<input name="email" type="email" pattern="[^@]+@oberlin\.edu" autoComplete="email" required /></label>
-        <button type="submit" disabled={Boolean(busy)}>{busy === 'reset' ? 'Sending…' : 'Email me a password reset'}</button>
-      </form>
-    </section>
-
-    <section className="admin-login__card">
-      <p className="eyebrow">Not a member yet?</p>
-      <h2>Request an OEC member account</h2>
-      <p>You must use a verified @oberlin.edu email. An Admin or Super Admin approves each request before portal access is enabled.</p>
-      <form onSubmit={requestMembership} className="settings-form">
-        <label>Name<input name="displayName" minLength={2} autoComplete="name" required /></label>
-        <label>Oberlin email<input name="email" type="email" pattern="[^@]+@oberlin\.edu" autoComplete="email" required /></label>
-        <button className="button--cardinal" type="submit" disabled={Boolean(busy)}>{busy === 'request' ? 'Submitting…' : 'Request membership'}</button>
-      </form>
-    </section>
-
-    {(error || notice) && <div className="member-auth-message" role={error ? 'alert' : 'status'}>{error || notice}</div>}
-  </div>
+  return <div className="member-auth-grid"><section className="admin-login__card">
+    <div className="auth-tabs" aria-label="Account access">{(['password','request'] as const).map(tab=><button key={tab} type="button" aria-pressed={tab==='password'?mode!=='request':mode==='request'} onClick={()=>{setMode(tab);setError('');setNotice('')}}>{tab==='password'?'Sign in':'Request an account'}</button>)}</div>
+    <h2>{mode==='password'?'Member sign in':mode==='magic'?'Email sign-in link':mode==='reset'?'Reset your password':'Request an account'}</h2>
+    <p>{mode==='request'?'Verify your Oberlin email, then wait for the club to approve your account.':'Use your approved Oberlin email.'}</p>
+    <form className="settings-form" onSubmit={mode==='password'?passwordSignIn:mode==='magic'?magicLink:mode==='reset'?passwordReset:requestMembership}>
+    {mode==='request'&&<label>Full name<input name="displayName" autoComplete="name" minLength={2} required/></label>}
+    <label>Oberlin email<input name="email" type="email" autoComplete={mode==='password'?'username':'email'} required/></label>
+    {mode==='password'&&<label>Password<input name="password" type="password" autoComplete="current-password" required/></label>}
+    {(error||notice)&&<p className="member-auth-message" role={error?'alert':'status'}>{error||notice}</p>}
+    <button type="submit" disabled={Boolean(busy)}>{busy?'Please wait...':mode==='password'?'Sign in':mode==='magic'?'Send sign-in link':mode==='reset'?'Send reset link':'Request account'}</button>
+    </form>
+    <div className="auth-options">{mode==='password'?<><button type="button" onClick={()=>setMode('magic')}>Sign in with an email link</button><button type="button" onClick={()=>setMode('reset')}>Forgot password?</button></>:<button type="button" onClick={()=>setMode('password')}>Back to sign in</button>}</div>
+  </section></div>
 }

@@ -1,3 +1,7 @@
 import { SubmissionInbox } from '@/components/admin/submissions/SubmissionInbox'
 import { listSubmissions } from '@/lib/cms/submissions'
-export default async function SubmissionsPage(){return <main className="admin-panel"><div className="admin-page-heading"><div><p className="eyebrow">Inbox</p><h1>Public Submissions</h1><p>Review interest, project ideas, leadership interest, volunteers, and partnership inquiries.</p></div></div><SubmissionInbox initialRows={await listSubmissions()}/></main>}
+export default async function SubmissionsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams
+  const status = typeof params.status === 'string' && ['new', 'reviewed', 'approved', 'archived'].includes(params.status) ? params.status : ''
+  return <main className="admin-panel"><div className="admin-page-heading"><div><h1>Inbox</h1><p>Messages and requests from the club website.</p></div></div><SubmissionInbox initialRows={await listSubmissions()} initialStatus={status}/></main>
+}

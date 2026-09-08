@@ -2,7 +2,28 @@ import 'server-only'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { z } from 'zod'
 import { projectStatusSchema } from '@/lib/validation/projects'
+import { previewProjects, publicPreviewEnabled } from './previewProjects'
 export type ProjectFilters={status?:z.infer<typeof projectStatusSchema>;discipline?:string;recruiting?:boolean;skills:string[]}
 export function parseProjectFilters(params:URLSearchParams):ProjectFilters{const raw=params.get('status');const status=projectStatusSchema.safeParse(raw);const recruiting=params.get('recruiting');return{status:status.success?status.data:undefined,discipline:params.get('discipline')||undefined,recruiting:recruiting==='true'?true:recruiting==='false'?false:undefined,skills:params.getAll('skill').filter(Boolean)}}
-export async function listPublishedProjects(filters:ProjectFilters={skills:[]}){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return[];const s=await createSupabaseServerClient();let q=s.from('projects').select('*').eq('publication_state','published').order('sort_order').order('title');if(filters.status)q=q.eq('status',filters.status);if(filters.discipline)q=q.contains('disciplines',[filters.discipline]);if(typeof filters.recruiting==='boolean')q=q.eq('recruiting',filters.recruiting);if(filters.skills.length)q=q.contains('skills',filters.skills);const{data,error}=await q;if(error)throw new Error(`PROJECTS_LOAD_FAILED:${error.message}`);return data??[]}
-export async function getPublishedProject(slug:string){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return null;const s=await createSupabaseServerClient();const{data,error}=await s.from('projects').select('*').eq('slug',slug).eq('publication_state','published').maybeSingle();if(error||!data)return null;const{data:updates}=await s.from('project_updates').select('*').eq('project_id',data.id).eq('publication_state','published').order('update_date',{ascending:false});return{...data,updates:updates??[]}}
+export async function listPublishedProjects(filters:ProjectFilters={skills:[]}) {
+  if(publicPreviewEnabled())return previewProjects.filter(p=>(!filters.status||p.status===filters.status)&&(!filters.discipline||p.disciplines.includes(filters.discipline))&&(filters.recruiting===undefined||p.recruiting===filters.recruiting)&&!filters.skills.length)
+  if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return []
+  const s=await createSupabaseServerClient()
+  let q=s.from('projects').select('*').eq('publication_state','published').order('sort_order').order('title')
+  if(filters.status)q=q.eq('status',filters.status)
+  if(filters.discipline)q=q.contains('disciplines',[filters.discipline])
+  if(typeof filters.recruiting==='boolean')q=q.eq('recruiting',filters.recruiting)
+  if(filters.skills.length)q=q.contains('skills',filters.skills)
+  const {data,error}=await q
+  if(error)throw new Error('PROJECTS_LOAD_FAILED:'+error.message)
+  return data??[]
+}
+export async function getPublishedProject(slug:string) {
+  if(publicPreviewEnabled())return previewProjects.find(p=>p.slug===slug)??null
+  if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return null
+  const s=await createSupabaseServerClient()
+  const {data,error}=await s.from('projects').select('*').eq('slug',slug).eq('publication_state','published').maybeSingle()
+  if(error||!data)return null
+  const {data:updates}=await s.from('project_updates').select('*').eq('project_id',data.id).eq('publication_state','published').order('update_date',{ascending:false})
+  return {...data,updates:updates??[]}
+}

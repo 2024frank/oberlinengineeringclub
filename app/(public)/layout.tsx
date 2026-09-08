@@ -1,6 +1,15 @@
-import { AnnouncementBanner } from '@/components/public/AnnouncementBanner'
-import { PublicFooter } from '@/components/public/PublicFooter'
 import { OrganizationSchema } from '@/components/public/OrganizationSchema'
-import { PublicHeader } from '@/components/public/PublicHeader'
-import { getPublishedNavigation, getPublicSiteSettings } from '@/lib/page-builder/publicPages'
-export default async function PublicLayout({children}:{children:React.ReactNode}){const[items,settings]=await Promise.all([getPublishedNavigation(),getPublicSiteSettings()]);return <div className="site-shell"><OrganizationSchema siteUrl={process.env.NEXT_PUBLIC_SITE_URL??'https://oberlin32engineeringsociety.com'} contactEmail={settings.contact.email} socialLinks={settings.social}/><AnnouncementBanner announcement={settings.announcement}/><PublicHeader items={items} logoSrc={settings.brand.horizontalUrl}/><main id="main-content">{children}</main><PublicFooter contactEmail={settings.contact.email} footerText={settings.footer.text} socialLinks={settings.social} badgeSrc={settings.brand.badgeUrl}/></div>}
+import { getPublicSiteSettings } from '@/lib/page-builder/publicPages'
+import { listPublishedProjects } from '@/lib/content/projects'
+import { listPublishedEvents } from '@/lib/content/events'
+import { WorkbenchSite } from '@/components/concepts/workbench/WorkbenchSite'
+import '../concepts/concepts.css'
+import '../concepts/workbench/workbench.css'
+import '../concepts/workbench/workbench-live.css'
+
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  const [publishedProjects, publishedEvents, settings] = await Promise.all([listPublishedProjects(), listPublishedEvents({ when: 'all' }), getPublicSiteSettings()])
+  const projects = publishedProjects.map(p => ({ id: p.id, slug: p.slug, title: p.title, summary: p.summary ?? '', status: p.status ?? '', disciplines: p.disciplines ?? [], recruiting: Boolean(p.recruiting), skills: 'skills' in p && Array.isArray(p.skills) ? p.skills : [] }))
+  const events = publishedEvents.map(e => ({ id: e.id, slug: e.slug, title: e.title, start: e.start_at, location: e.location ?? '', eventType: e.event_type ?? '' }))
+  return <><OrganizationSchema siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oberlin32engineeringsociety.com'} contactEmail={settings.contact.email} socialLinks={settings.social}/><WorkbenchSite projects={projects} events={events}>{children}</WorkbenchSite></>
+}

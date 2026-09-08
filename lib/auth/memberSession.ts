@@ -13,6 +13,7 @@ export type CurrentMember = {
 }
 
 export async function getCurrentMember(): Promise<CurrentMember | null> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null
   const supabase = await createSupabaseServerClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user?.email) return null

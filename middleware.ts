@@ -35,7 +35,9 @@ const PUBLIC_HOSTS = new Set<string>()
 const PASS_THROUGH = [
   /^\/admin(?:\/|$)/, /^\/api\//, /^\/auth\//, /^\/preview(?:\/|$)/,
   /^\/staff-activate$/, /^\/staff-reset-password$/,
-  /^\/member-activate$/, /^\/member-verify$/, /^\/member-reset-password$/
+  /^\/member-activate$/, /^\/member-verify$/, /^\/member-reset-password$/,
+  // Keep older member emails usable without dropping their host-only auth cookies.
+  /^\/member(?:\/|$)/
 ]
 
 export function middleware(request: NextRequest) {

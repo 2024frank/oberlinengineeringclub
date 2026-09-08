@@ -1,4 +1,5 @@
 import 'server-only'
+import { previewProjects, previewMedia, publicPreviewEnabled } from '@/lib/content/previewProjects'
 import { cache } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { validatePageForPublish } from './pageService'
@@ -31,13 +32,29 @@ const fallbackPageInput:Record<string,unknown>={
     {stableKey:'questions',isVisible:true,type:'features_grid',heading:'Questions worth asking before you apply',body:'Requirements differ by school and change between years.',items:[{title:'Prerequisites',body:'Which courses and grades are required for the specific engineering major?'},{title:'Admission',body:'What is guaranteed, conditional, or competitive for the partner school?'},{title:'Financial aid',body:'How will aid change after leaving Oberlin?'},{title:'Degree timing',body:'What must be completed before transfer, and what happens if a course is missing?'},{title:'Housing & transition',body:'What should you plan for before arriving at the partner school?'},{title:'Advising',body:'Who at Oberlin and the partner school can confirm your individual plan?'}]},
     {stableKey:'cta',isVisible:true,type:'cta',tone:'cardinal',heading:'Ask the people who have done it.',body:'Compare notes with other students, then confirm anything that matters with Oberlin advising and the partner school.',primaryCta:{label:'See resources',href:'/resources?category=3-2'},secondaryCta:{label:'Get involved',href:'/get-involved'}}
   ]},
-  'get-involved':{pageId:ids['get-involved'],slug:'get-involved',title:'Get Involved',seoTitle:'Get Involved',seoDescription:'Join the Oberlin Engineering Club.',ogMediaId:null,sections:[]}
+  'get-involved':{pageId:ids['get-involved'],slug:'get-involved',title:'Get Involved',seoTitle:'Get Involved',seoDescription:'Join the Oberlin Engineering Club.',ogMediaId:null,sections:[]},
+  projects:{pageId:'00000000-0000-4000-8000-000000000105',slug:'projects',title:'Projects',seoTitle:'Projects · Oberlin Engineering Club',seoDescription:'Explore hands-on student engineering builds and research projects at Oberlin.',ogMediaId:null,sections:[]},
+  events:{pageId:'00000000-0000-4000-8000-000000000106',slug:'events',title:'Events',seoTitle:'Events · Oberlin Engineering Club',seoDescription:'Upcoming hardware build nights, workshops, and engineering speaker panels.',ogMediaId:null,sections:[]},
+  opportunities:{pageId:'00000000-0000-4000-8000-000000000107',slug:'opportunities',title:'Opportunities',seoTitle:'Opportunities · Oberlin Engineering Club',seoDescription:'Summer research fellowships, REUs, and dual-degree transfer opportunities.',ogMediaId:null,sections:[]},
+  resources:{pageId:'00000000-0000-4000-8000-000000000108',slug:'resources',title:'Resources',seoTitle:'Resources · Oberlin Engineering Club',seoDescription:'3-2 pathway course requirements, partner school guides, and lab equipment manuals.',ogMediaId:null,sections:[]},
+  news:{pageId:'00000000-0000-4000-8000-000000000109',slug:'news',title:'News',seoTitle:'News · Oberlin Engineering Club',seoDescription:'Updates and dispatches from the Oberlin Engineering Club makerspace.',ogMediaId:null,sections:[]}
 }
-export const fallbackPages:Record<string,PageSnapshot>=Object.fromEntries(Object.entries(fallbackPageInput).map(([slug,page])=>[slug,pageSnapshotSchema.parse(page)]))
+export const fallbackPages:Record<string,PageSnapshot>=Object.fromEntries(Object.entries(fallbackPageInput).map(([slug,page])=>{
+  const snapshot=pageSnapshotSchema.parse(page)
+  if(slug==='home'){
+    const order=['hero','projects','disciplines','events','opportunities','join']
+    snapshot.sections.sort((a,b)=>order.indexOf(a.stableKey)-order.indexOf(b.stableKey))
+    for(const section of snapshot.sections){
+      if(section.type==='project_grid')section.heading='Projects'
+      if(section.type==='discipline_grid')section.heading='Engineering disciplines'
+    }
+  }
+  return [slug,snapshot]
+}))
 
 export type PublishedPageRepository={getPublished(slug:string):Promise<PageSnapshot|null>}
-const supabaseRepo:PublishedPageRepository={async getPublished(slug){if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)return fallbackPages[slug]??null;const s=await createSupabaseServerClient();const{data:page,error}=await s.from('pages').select('id,slug,published_version_id').eq('slug',slug).maybeSingle();if(error||!page?.published_version_id)return fallbackPages[slug]??null;const{data:version}=await s.from('page_versions').select('page_snapshot,sections_snapshot').eq('id',page.published_version_id).maybeSingle();if(!version)return fallbackPages[slug]??null;return validatePageForPublish({...(version.page_snapshot as object),pageId:page.id,slug:page.slug,sections:version.sections_snapshot})}}
-export const getPublishedPageBySlug=cache(async(slug:string,repo:PublishedPageRepository=supabaseRepo)=>{const page=await repo.getPublished(slug);if(!page)throw new Error('PUBLIC_PAGE_NOT_FOUND');return page})
+const supabaseRepo:PublishedPageRepository={async getPublished(slug){if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)return fallbackPages[slug]??fallbackPages['home']??null;const s=await createSupabaseServerClient();const{data:page,error}=await s.from('pages').select('id,slug,published_version_id').eq('slug',slug).maybeSingle();if(error||!page?.published_version_id)return fallbackPages[slug]??fallbackPages['home']??null;const{data:version}=await s.from('page_versions').select('page_snapshot,sections_snapshot').eq('id',page.published_version_id).maybeSingle();if(!version)return fallbackPages[slug]??fallbackPages['home']??null;return validatePageForPublish({...(version.page_snapshot as object),pageId:page.id,slug:page.slug,sections:version.sections_snapshot})}}
+export const getPublishedPageBySlug=cache(async(slug:string,repo:PublishedPageRepository=supabaseRepo)=>{const page=await repo.getPublished(slug);if(!page)return fallbackPages[slug]??fallbackPages['home'];return page})
 
 export type PublicNavigationItem={id?:string;label:string;destination:string;external?:boolean;sortOrder?:number}
 export async function getPublishedNavigation():Promise<PublicNavigationItem[]>{if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return [['Home','/'],['About','/about'],['Projects','/projects'],['Events','/events'],['Opportunities','/opportunities'],['Resources','/resources'],['3-2 Pathway','/pathway'],['News','/news'],['Get Involved','/get-involved']].map(([label,destination],i)=>({label,destination,sortOrder:(i+1)*10}));const s=await createSupabaseServerClient();const{data}=await s.from('navigation_items').select('id,label,destination,external,sort_order').eq('publication_state','published').eq('visible',true).order('sort_order');return(data??[]).map(r=>({id:r.id,label:r.label,destination:r.destination,external:r.external,sortOrder:r.sort_order}))}
@@ -49,6 +66,6 @@ export async function getPublicSiteSettings(){
   return{contact:{...fallback.contact,...(map.contact??{})},footer:{...fallback.footer,...(map.footer??{})},social:{...fallback.social,...(map.social??{})},seo:{...fallback.seo,...(map.seo??{})},announcement:map.announcement?.enabled?map.announcement:null,brand:{badgeUrl:map.brand?.badgeMediaId?brandMedia[map.brand.badgeMediaId]??null:null,horizontalUrl:map.brand?.horizontalMediaId?brandMedia[map.brand.horizontalMediaId]??null:null}}
 }
 
-export async function getCmsRenderContext(){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return{};const s=await createSupabaseServerClient();const[projects,events,opportunities,news,leaders,sponsors,media]=await Promise.all([
+export async function getCmsRenderContext(){if(publicPreviewEnabled())return{projects:previewProjects,media:previewMedia};if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return{};const s=await createSupabaseServerClient();const[projects,events,opportunities,news,leaders,sponsors,media]=await Promise.all([
   s.from('projects').select('*').eq('publication_state','published').order('sort_order').limit(12),s.from('events').select('*').eq('publication_state','published').gte('start_at',new Date().toISOString()).order('start_at').limit(12),s.from('opportunities').select('*').eq('publication_state','published').order('deadline').limit(12),s.from('news_posts').select('*').eq('publication_state','published').order('published_at',{ascending:false}).limit(12),s.from('leaders').select('*').eq('publication_state','published').eq('current',true).order('sort_order').limit(12),s.from('sponsors').select('*').eq('publication_state','published').order('sort_order').limit(12),s.from('media').select('id,public_url,alt_text').limit(200)
 ]);return{projects:projects.data??[],events:events.data??[],opportunities:opportunities.data??[],news:news.data??[],leaders:leaders.data??[],sponsors:sponsors.data??[],media:Object.fromEntries((media.data??[]).map(m=>[m.id,{url:m.public_url,alt:m.alt_text}]))}}

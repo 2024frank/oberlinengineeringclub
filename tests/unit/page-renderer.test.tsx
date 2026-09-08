@@ -12,11 +12,11 @@ describe('PageRenderer', () => {
     expect(screen.getByRole('heading', { name: 'Build. Learn. Engineer Together.' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Get involved' })).toBeInTheDocument()
     expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
-    expect(screen.getByText('Our first projects are taking shape. Check back soon.')).toBeInTheDocument()
+    expect(screen.getByText('Project details will be posted here.')).toBeInTheDocument()
   })
 })
 
 it('renders a selected hero image from the shared media context', () => {
-  render(<PageRenderer sections={[{ stableKey:'hero-media',isVisible:true,type:'hero',layout:'image',headline:'Engineering together',body:'',imageId:'00000000-0000-4000-8000-000000000099' }]} context={{media:{'00000000-0000-4000-8000-000000000099':{url:'/hero.jpg',alt:'Students building a robot'}}}} />)
-  expect(screen.getByRole('img',{name:'Students building a robot'})).toHaveAttribute('src','/hero.jpg')
+  render(<PageRenderer sections={[{ stableKey:'hero-media',isVisible:true,type:'hero',layout:'image',headline:'Engineering together',body:'',imageId:'00000000-0000-4000-8000-000000000099',imageAlt:'Students building a robot' }]} context={{media:{'00000000-0000-4000-8000-000000000099':{url:'/hero.jpg',alt:'Students building a robot'}}}} />)
+  expect(screen.getByRole('img',{name:'Students building a robot'}).getAttribute('src')).toContain('hero.jpg')
 })

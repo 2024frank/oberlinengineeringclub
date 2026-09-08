@@ -13,6 +13,10 @@ export function MemberVerificationCard({ requestId }: { requestId: string }) {
       })
       const body = await response.json()
       if (!response.ok) throw new Error(body.error ?? 'Verification failed.')
+      if (body.status === 'APPROVED' || body.status === 'ACTIVE') {
+        window.location.assign(body.status === 'ACTIVE' ? '/member' : '/member-activate')
+        return
+      }
       setState('done')
     } catch (cause) { setState('idle'); setError(cause instanceof Error ? cause.message : 'Verification failed.') }
   }

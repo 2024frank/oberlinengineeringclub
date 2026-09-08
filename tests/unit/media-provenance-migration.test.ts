@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe,expect,it } from 'vitest'
 
-const sql=readFileSync(new URL('../../database/migrations/018_media_provenance.sql',import.meta.url),'utf8')
+const sql=readFileSync(resolve(process.cwd(),'database/migrations/018_media_provenance.sql'),'utf8')
 
 describe('media provenance database enforcement',()=>{
   it('defines the authoritative publish assertion and generated-image QA requirement',()=>{

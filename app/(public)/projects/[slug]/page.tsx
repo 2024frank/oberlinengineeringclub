@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { SaveButton } from '@/components/member/SaveButton'
 import { getCurrentMember } from '@/lib/auth/memberSession'
 import { getPublishedProject } from '@/lib/content/projects'
 import { isSavedItem } from '@/lib/members/saves'
+import { publicMedia } from '@/lib/content/publicMedia'
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata> {
   const project=await getPublishedProject((await params).slug)
   return {title:project?.title??'Project not found',description:project?.summary}
@@ -15,10 +17,13 @@ export default async function ProjectPage({params}:{params:Promise<{slug:string}
   const p=await getPublishedProject(slug)
   if(!p)notFound()
   const member=await getCurrentMember()
+  const media = p.cover_media_id ? await publicMedia([p.cover_media_id]) : {}
+  const cover = media[p.cover_media_id]
   const saved=member?await isSavedItem(member.userId,'PROJECT',p.id):false
   const timeline=(p.timeline??[]) as Array<{label?:string;title?:string;body?:string;description?:string}>
-  return <><section className="project-detail-heading"><div className="shell"><Link className="breadcrumb" href="/projects"><ArrowLeft size={16}/>All projects</Link><span className="project-state">{String(p.status).replaceAll('_',' ')}</span><h1>{p.title}</h1><p>{p.summary}</p><div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div></div></section>
+  return <><section className="project-detail-heading"><div className="shell"><Link className="breadcrumb" href="/projects"><ArrowLeft size={16}/>All projects</Link><span className="project-state">{String(p.status).replaceAll('_',' ')}</span><h1>{p.title}</h1>{(p.problem||p.goal)&&<p>{p.summary}</p>}<div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div></div></section>
   <section className="detail-body"><div className="shell detail-grid"><div className="prose">
+    {cover && <figure className="project-cover"><Image src={cover.url} alt={cover.alt || p.title} width={1200} height={800} sizes="(max-width:950px) 100vw, 760px" priority/></figure>}
     {!p.problem&&!p.goal&&p.summary&&<><h2>Project brief</h2><p>{p.summary}</p></>}
     {p.problem&&<><h2>Problem</h2><p>{p.problem}</p></>}
     {p.goal&&<><h2>Goal</h2><p>{p.goal}</p></>}

@@ -6,6 +6,7 @@ const fixture = vi.hoisted(() => ({ project: {} as Record<string, unknown> }))
 vi.mock('@/lib/content/projects', () => ({ getPublishedProject: async () => fixture.project }))
 vi.mock('@/lib/auth/memberSession', () => ({ getCurrentMember: async () => null }))
 vi.mock('@/lib/members/saves', () => ({ isSavedItem: async () => false }))
+vi.mock('@/lib/content/publicMedia', () => ({ publicMedia: async () => ({ 'legacy-cover': { url: '/project-cover.jpg', alt: 'The printer awaiting repair' } }) }))
 vi.mock('@/components/public/CoverImage', () => ({ CoverImage: () => <div role="img" aria-label="Legacy project cover"/> }))
 
 beforeEach(() => {
@@ -25,11 +26,12 @@ it('shows the published difficulty alongside the existing project details', asyn
   expect(screen.getByText('Intermediate', { selector: 'dd' })).toBeVisible()
 })
 
-it('replaces the hidden legacy photo frame with the published brief and skills', async () => {
+it('shows the published project photograph with the brief and working interest links', async () => {
   const { container } = render(await ProjectPage({ params: Promise.resolve({ slug: 'ender-3-klipper-upgrade' }) }))
-  expect(container.querySelector('.project-detail-photo')).toBeNull()
+  expect(screen.getByRole('img', { name: 'The printer awaiting repair' })).toHaveAttribute('src', expect.stringContaining('project-cover.jpg'))
   expect(screen.getByRole('heading', { name: 'Project brief' })).toBeVisible()
   expect(container.querySelector('.prose')).toHaveTextContent('Upgrade the controller and install Klipper.')
+  expect(screen.getAllByText('Upgrade the controller and install Klipper.')).toHaveLength(1)
   expect(screen.getByRole('heading', { name: 'Skills you can contribute' })).toBeVisible()
   expect(screen.getByRole('list', { name: 'Project skills' })).toHaveTextContent('Firmware')
   expect(screen.getByRole('link', { name: 'Express interest' })).toHaveAttribute('href', '/get-involved?type=join_project&project=Ender%203%20Repair%20%26%20Klipper%20Upgrade')

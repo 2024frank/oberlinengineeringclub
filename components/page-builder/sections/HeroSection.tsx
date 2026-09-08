@@ -12,15 +12,15 @@ export function HeroSection({
   context?: PageRenderContext;
 }) {
   const media = section.imageId ? context?.media?.[section.imageId] : undefined;
-  const home = section.layout !== "minimal";
+  const home = context?.pageSlug === "home";
   const image =
     media?.url ??
-    (home
+    (home && section.layout !== "minimal"
       ? "https://qaudokydctziaoakvkyv.supabase.co/storage/v1/object/public/oec-media/site/home-hero-workbench.jpg"
       : null);
   return (
     <>
-      <section className={home ? "home-hero" : "editorial-hero"}>
+      <section className={image ? "home-hero" : "editorial-hero"}>
         {image && (
           <Image
             className="home-hero__image"
@@ -33,6 +33,7 @@ export function HeroSection({
         )}
         <div className="shell">
           <div className="hero-copy">
+            {section.eyebrow && <p className="eyebrow">{section.eyebrow}</p>}
             {home ? (
               <>
                 <h1>

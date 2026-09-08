@@ -95,3 +95,17 @@ test('member and officer sign-in pages remain outside the public redesign', asyn
     await expect(page.locator('.professional-site')).toHaveCount(0)
   }
 })
+
+test('officer sign-in uses a document navigation without cross-origin prefetch', async ({ page }) => {
+  const requests: boolean[] = []
+  await page.route('**/admin/login*', async route => {
+    requests.push(route.request().isNavigationRequest())
+    await route.fulfill({ contentType: 'text/html', body: '<h1>Officer portal</h1>' })
+  })
+  await page.goto('/')
+  const officerLink = page.getByRole('link', { name: 'Officer sign in' })
+  await officerLink.hover()
+  await officerLink.click()
+  await expect(page.getByRole('heading', { name: 'Officer portal' })).toBeVisible()
+  expect(requests).toEqual([true])
+})

@@ -1,0 +1,132 @@
+.concept-machine {
+  --ink: #f1f4f2;
+  --muted: #b3bdc1;
+  --accent: #6fd5df;
+  --panel: #101416;
+  --line: #3b464b;
+  --machine-red: #af202c;
+  --machine-cyan: #6fd5df;
+  --machine-steel: #aeb8bd;
+  background: #101416;
+}
+.concept-machine :is(h1,h2,h3,button,input,select,textarea) { font-family: Inter, Arial, sans-serif; letter-spacing: 0; }
+.concept-machine :is(h1,h2,h3) { font-weight: 600; }
+.concept-machine :is(button,a,summary):focus-visible { outline: 2px solid var(--machine-cyan); outline-offset: 4px; }
+.concept-machine .concept-primary { background: var(--machine-red); border-color: var(--machine-red); color: var(--ink) !important; }
+.concept-machine .concept-primary:hover { background: #c32937; }
+.concept-machine .concept-stage { background: #101416; min-height: 0; }
+.concept-public.concept-machine .concept-purpose { top: auto; left: 32px; bottom: 123px; }
+.concept-public.concept-machine .concept-hero-actions { top: auto; left: auto; right: 34px; bottom: 40px; }
+.concept-public.concept-machine:not(.concept-is-open) .concept-header { background: #101416e8; }
+.concept-public.concept-machine:not(.concept-is-open) .concept-scene-tools { left: 32px; right: auto; bottom: 87px; }
+.concept-machine .concept-entry-paths a { color: #f1f4f2; }
+.concept-machine .concept-entry-paths a:hover { background: #283237; }
+.concept-machine .concept-header { padding: 20px 32px; background: #101416e8; border-bottom: 1px solid #aeb8bd24; }
+.concept-machine .concept-header nav { gap: 30px; }
+.concept-machine .concept-header nav button, .concept-machine .concept-header nav a { font-size: 15px; }
+.concept-machine .concept-brand span { font-size: 16px; }
+.concept-machine .concept-menu-button { width: 44px; height: 44px; border-radius: 4px; border-color: var(--line); }
+.concept-machine .concept-header nav button:hover, .concept-machine .concept-header nav a:hover { color: var(--machine-cyan); }
+.concept-machine .concept-purpose { left: 32px; bottom: 112px; max-width: 350px; font-size: 16px; line-height: 1.6; padding: 14px 18px; border-left: 3px solid var(--machine-red); background: #101416ed; }
+.concept-machine .concept-hero-actions { right: 34px; bottom: 40px; gap: 14px; }
+.concept-machine .concept-join-button { min-width: 250px; min-height: 74px; border: 4px solid #aeb8bd; border-radius: 5px; outline: 1px solid #58646a; outline-offset: 2px; background: var(--machine-red); font-size: 23px !important; box-shadow: 0 7px 0 #505a60, 0 12px 25px #0006 !important; }
+.concept-machine .concept-join-button:hover { background: #c32937; transform: translateY(-2px); }
+.concept-machine .concept-join-button:active { transform: translateY(4px); }
+.concept-machine .concept-join-button > span { background: var(--ink); color: var(--panel); }
+.concept-machine .concept-explore { font-size: 14px !important; color: var(--machine-cyan); background: #101416d9; padding: 8px 0 8px 10px; }
+.concept-machine .concept-scene-tools { left: 32px; bottom: 88px; }
+.concept-machine .concept-scene-tools .concept-icon { border-radius: 4px; background: #101416ed; }
+.concept-machine .concept-scene-tools .concept-icon:is(:hover,.active) { background: var(--machine-steel); color: #101416; border-color: var(--machine-steel); }
+.concept-machine .concept-entry-paths { background: #181f22; border-color: #58646a; }
+.concept-machine .concept-entry-paths a { border-color: #3b464b; }
+.concept-machine .concept-entry-paths a > span { color: var(--machine-cyan); }
+.concept-machine .concept-comparison { background: #101416; }
+.concept-machine :is(.concept-preview-label,.concept-footer-arrow) { color: var(--machine-cyan); }
+.concept-machine.concept-is-open .concept-hero { opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
+.concept-machine.concept-is-open .concept-scene-tools { bottom: 76px; }
+.concept-machine .robot-tablet-surface { --panel: #101416; --line: #3b464b; --muted: #b3bdc1; --accent: #6fd5df; border-radius: 1px; background: #101416; color: var(--ink); }
+.concept-machine .machine-terminal-content { background: #101416; scrollbar-color: #6c7b82 #101416; scrollbar-width: thin; scroll-padding-top: 76px; }
+.concept-machine .concept-panel-top { min-height: 62px; padding: 10px 24px; background: #171e21; border-bottom: 1px solid #3b464b; }
+.concept-machine .concept-panel-top > span { font-size: 12px; font-weight: 600; color: var(--machine-cyan); }
+.concept-machine .concept-panel-top .concept-icon { width: 40px; height: 40px; border-radius: 3px; }
+.concept-machine .concept-panel-body { padding: 28px 32px 36px; }
+.concept-machine .concept-panel h2 { font-size: 32px; line-height: 1.15; margin: 12px 0 18px; }
+.concept-machine .concept-panel p { font-size: 15px; line-height: 1.65; }
+.concept-machine .concept-panel :is(h1,h2,h3,p,a,button,dd) { overflow-wrap: break-word; }
+.concept-machine .concept-project-list > button { border-left: 3px solid transparent; padding: 20px 10px; transition: background .15s, border-color .15s; }
+.concept-machine .concept-project-list > button:hover { background: #1b2529; border-left-color: var(--machine-red); }
+.concept-machine .concept-project-list small { color: var(--machine-cyan); }
+.concept-machine .concept-project-list strong { font-size: 22px; }
+.concept-machine .concept-project-list strong + span { font-size: 14px; }
+.concept-machine .concept-search { background: #1b2327; border: 1px solid #3b464b; border-radius: 3px; padding: 3px 12px; margin-top: 22px; }
+.concept-machine .concept-search input { min-height: 44px; font-size: 16px; }
+.concept-machine .project-directory-intro a { color: var(--machine-cyan) !important; }
+.concept-machine .concept-menu nav > button { font-size: 29px; }
+.concept-machine .robot-live-content h1 { font-size: 34px; line-height: 1.18; }
+.concept-machine .robot-live-content h2 { font-size: 26px; }
+.concept-machine .robot-live-content :is(p,li) { color: var(--muted); }
+.concept-machine .robot-live-content :is(input:not([type=checkbox]),select,textarea) { background: #1b2327; border-color: #4a575e; font-size: 16px; }
+.concept-machine .robot-live-content :is(input,select,textarea):focus-visible { outline: 2px solid var(--machine-cyan); outline-offset: 3px; }
+.concept-machine .robot-live-content input[type=checkbox] { accent-color: var(--machine-red); }
+.concept-machine .robot-live-content :is(a:not(.button),.text-link) { color: var(--machine-cyan); }
+.concept-machine .robot-live-content :is(.button--primary,.button--cardinal) { background: var(--machine-red); border-color: var(--machine-red); color: var(--ink); font-weight: 600; }
+.concept-machine .robot-live-content :is(.button--primary,.button--cardinal):hover:not(:disabled) { background: #c32937; border-color: #c32937; }
+.concept-machine .robot-live-content .tag-row > span { background: #202c31; border-color: #3b464b; color: var(--ink); }
+.concept-machine .robot-live-content .join-progress { gap: 12px; padding-bottom: 20px; }
+.concept-machine .robot-live-content .join-progress button { font-size: 12px; }
+.concept-machine .robot-live-content .join-progress button > span { border-radius: 3px; }
+.concept-machine .robot-live-content .join-progress button[aria-current=step] { color: var(--ink); }
+.concept-machine .robot-live-content .join-progress button[aria-current=step] > span { background: var(--machine-red); color: var(--ink); border-color: var(--machine-red); }
+.concept-machine .robot-live-content .interest-choices { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.concept-machine .robot-live-content .interest-choices label { background: #161d20; border-radius: 3px; }
+.concept-machine .robot-live-content .interest-choices .is-selected { background: #292124; border-color: var(--machine-red); }
+.concept-machine .robot-live-content .is-selected .interest-check { color: var(--ink); }
+.concept-machine .robot-live-content .join-actions { background: #101416; }
+.concept-machine .robot-live-content .join-actions > span { display: none; }
+.concept-machine .robot-live-content .join-success { position: relative; max-width: 580px; margin: 12px auto; padding: 32px; background: #f1f4f2; color: #101416; border-top: 8px solid #af202c; border-bottom: 2px dashed #aeb8bd; animation: machine-receipt .5s ease-out both; }
+.concept-machine .robot-live-content .join-success :is(h1,p) { color: #263136; }
+.concept-machine .robot-live-content .join-success > svg { color: #47631a; }
+.concept-machine .robot-live-content .join-success .eyebrow { color: #a01e29; font-weight: 700; }
+.concept-machine .robot-live-content .join-success a:not(.button) { color: #006575; }
+.concept-machine .robot-live-content .join-success [role=alert] { color: #a01e29; }
+.concept-machine .robot-live-content .join-success .button-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.machine-first-frame { position: absolute; inset: 0 0 62px; pointer-events: none; }
+.machine-first-frame img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.concept-machine .concept-scene { transition: opacity .25s; }
+.concept-machine .concept-scene[data-status=loading], .concept-machine .concept-scene[data-status=failed] { opacity: 0; pointer-events: none; }
+.concept-machine .concept-scene[data-status=ready] { opacity: 1; }
+@keyframes machine-receipt { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 759px) {
+  .concept-public.concept-machine .concept-purpose { top: auto; left: 20px; bottom: 199px; }
+  .concept-public.concept-machine .concept-hero-actions { left: 22px; right: 22px; bottom: 37px; }
+  .concept-public.concept-machine:not(.concept-is-open) .concept-scene-tools { left: auto; right: 20px; top: 96px; bottom: auto; }
+  .concept-machine .concept-header { padding: 16px; gap: 10px; }
+  .concept-machine .concept-brand span { font-size: 13px; }
+  .concept-machine .concept-brand img { width: 43px; height: 43px; }
+  .concept-machine .concept-scene { top: 0; bottom: 64px; }
+  .concept-machine .concept-purpose { left: 20px; bottom: 198px; padding: 0 0 0 12px; font-size: 13px; max-width: 290px; }
+  .concept-machine .concept-hero-actions { left: 22px; right: 22px; bottom: 37px; gap: 12px; }
+  .concept-machine .concept-join-button { min-height: 64px; font-size: 23px !important; }
+  .concept-machine .concept-scene-tools { left: 20px; bottom: 220px; }
+  .concept-machine.concept-is-open .concept-scene-tools { bottom: 75px; }
+  .concept-machine .concept-panel-top { padding: 8px 14px; min-height: 57px; }
+  .concept-machine .concept-panel-body { padding: 22px 17px 26px; }
+  .concept-machine .concept-panel h2 { font-size: 28px; }
+  .concept-machine .concept-panel p { font-size: 14px; }
+  .concept-machine .concept-project-list > button { padding: 18px 0; gap: 9px; grid-template-columns: 18px minmax(0,1fr) 18px; }
+  .concept-machine .concept-project-list strong { font-size: 20px; }
+  .concept-machine .robot-live-content h1 { font-size: 27px; }
+  .concept-machine .robot-live-content h2 { font-size: 24px; }
+  .concept-machine .robot-live-content .join-progress { gap: 7px; }
+  .concept-machine .robot-live-content .join-progress button { flex-direction: column; align-items: flex-start; font-size: 11px; }
+  .concept-machine .robot-live-content .interest-choices { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .concept-machine .robot-live-content .interest-choices label { font-size: 12px; padding: 12px; }
+  .concept-machine .robot-live-content .join-actions { padding: 12px 0; flex-wrap: nowrap; }
+  .concept-machine .robot-live-content .join-actions > span { flex-basis: 100%; }
+  .concept-machine .robot-live-content .join-actions .button { flex: 1; }
+  .concept-machine .robot-live-content .join-success { padding: 23px 19px; }
+  .machine-first-frame { bottom: 64px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .concept-machine .robot-live-content .join-success { animation: none; }
+}

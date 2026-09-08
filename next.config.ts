@@ -2,6 +2,13 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  allowedDevOrigins: ['127.0.0.1'],
+  turbopack: {},
+  webpack(config, { dev }) {
+    // Keep local iteration usable on storage-constrained machines.
+    if (dev) config.cache = false
+    return config
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' },

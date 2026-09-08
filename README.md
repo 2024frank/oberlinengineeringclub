@@ -28,6 +28,18 @@ Apply `database/migrations/*.sql` in numeric order to the environment database b
 
 ## Verification
 
+Run the local baseline with `npm test`. It runs Vitest unit/integration tests,
+then the standalone Node tests in `tests/node`. Run either runner independently
+with `npm run test:vitest` or `npm run test:node`; pass Vitest file filters after
+`npm run test:vitest --`. Vitest does not collect Playwright or Node test files.
+Its cache stays in `.cache/vitest`, and the runner config loader supports a shared
+`node_modules` symlink without writing a bundled config into that directory.
+
+Playwright remains a separate `npm run test:e2e` command. The eight existing
+integration tests only check for harness credentials and are skipped without
+them; they do not exercise database operations even when enabled. A passing
+local baseline does not replace staging/database acceptance.
+
 ```bash
 npm run verify:release
 ```

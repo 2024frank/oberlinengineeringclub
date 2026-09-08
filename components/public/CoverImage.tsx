@@ -1,11 +1,13 @@
 import 'server-only'
 import Image from 'next/image'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { previewMedia, publicPreviewEnabled } from '@/lib/content/previewProjects'
 
 // News, event and project records all carry a cover_media_id that no detail template
 // rendered, so pages with a cover still showed a bare charcoal header. Renders the cover
 // as the hero background; returns null when there is no cover, leaving the plain header.
 export async function CoverImage({ mediaId }: { mediaId?: string | null }) {
+  if (mediaId && publicPreviewEnabled() && previewMedia[mediaId]) return <Image className="detail-hero__bg" src={previewMedia[mediaId].url} alt="" fill sizes="100vw" priority />
   if (!mediaId || !process.env.NEXT_PUBLIC_SUPABASE_URL) return null
   const supabase = await createSupabaseServerClient()
   const { data } = await supabase.from('media').select('public_url').eq('id', mediaId).maybeSingle()

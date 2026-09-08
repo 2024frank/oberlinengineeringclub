@@ -26,6 +26,14 @@ An uninvited Supabase identity is not an OEC staff account.
 
 ## Member lifecycle
 
+Officers can approve a public club or leadership-interest submission, or use **Members > Add members** with up to 25 comma/newline-separated Oberlin addresses. The recipient list is reviewed before sending. Leadership-interest approval grants membership only, never a staff role.
+
+Officer invitations record approval immediately, but create no member profile until the matching verified email identity accepts. After verification the student proceeds directly to password setup without a second approval. If the inviting officer no longer has approval authority, the verified request returns to the review queue. Migration `022_member_invitations.sql` must be applied before deploying this workflow.
+
+Members includes every invitation and account, with separate **Needs approval**, **Finishing setup**, and **Active** views. Email send outcomes are stored independently of approval. A failed email does not undo an approval; **Resend setup email** retries the current step. "Email sent" means the provider accepted the message, not a delivery/read receipt. Older messages have no recorded send timestamp.
+
+Self-service requests without a prior officer invitation keep the verification-first flow:
+
 1. Student requests an account with an exact `@oberlin.edu` address.
 2. Student opens the verification email and presses **Continue securely** before the one-time token is consumed.
 3. Request enters the Admin/Super Admin approval queue.
@@ -34,6 +42,8 @@ An uninvited Supabase identity is not an OEC staff account.
 6. Active members can sign in by password or magic link and can request password recovery to the approved Oberlin address.
 
 Pending, rejected, approved-but-not-activated, suspended, or non-Oberlin identities cannot enter the member portal.
+
+Member links target the public website. Older member links on the officer host remain usable with their existing session cookies. Members and officers share a Supabase identity; choosing its existing password during member activation is allowed and does not change officer permissions.
 
 ## Member privacy
 

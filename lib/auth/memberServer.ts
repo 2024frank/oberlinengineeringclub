@@ -3,8 +3,10 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isOberlinEmail, normalizeMembershipDecision, type MembershipStatus } from './memberLifecycle'
 import { assertMemberRecoveryEligible } from './passwordRecovery'
 import { buildServerAuthLink, type OecEmailOtpType } from './serverAuthLinks'
+import { memberEmailOrigin } from './memberEmailOrigin'
+import { parseMemberEmails } from '@/lib/members/invitations'
 import { sendTransactionalEmail } from '@/lib/email/client'
-import { memberMagicLinkEmail,memberPasswordResetEmail,membershipApprovedEmail,membershipRejectedEmail,membershipVerificationEmail } from '@/lib/email/templates'
+import { memberMagicLinkEmail,memberPasswordResetEmail,membershipApprovedEmail,membershipRejectedEmail,membershipVerificationEmail,membershipInvitationEmail } from '@/lib/email/templates'
 
 export type MembershipRequestSummary = {
   id: string
@@ -15,6 +17,9 @@ export type MembershipRequestSummary = {
   reviewedAt: string | null
   reviewNote: string | null
   createdAt: string
+  preapprovedAt: string | null
+  lastEmailSentAt: string | null
+  lastEmailError: string | null
 }
 
 async function generateMemberLink(email: string, origin: string, next: string, type: OecEmailOtpType) {
@@ -22,7 +27,7 @@ async function generateMemberLink(email: string, origin: string, next: string, t
   const { data, error } = await supabase.auth.admin.generateLink({ type, email })
   const tokenHash = data?.properties?.hashed_token
   if (error || !tokenHash) throw new Error(`MEMBER_AUTH_LINK_FAILED:${error?.message ?? 'unknown'}`)
-  return buildServerAuthLink({ origin, tokenHash, type, next })
+  return buildServerAuthLink({ origin: memberEmailOrigin(origin), tokenHash, type, next })
 }
 
 async function generateVerificationLink(email: string, origin: string, next: string) {
@@ -45,39 +50,57 @@ export async function submitMembershipRequest(input: { email: string; displayNam
   return { requestId: data.id, status: 'REQUESTED' as const }
 }
 
-// Officer-initiated equivalent of submitMembershipRequest(), for a "join the club"
-// public submission an admin has approved. It cannot skip straight to an active member:
-// approve_membership_request hard-requires the applicant to have already proven they own
-// the @oberlin.edu inbox (auth_user_id set by verify_membership_request), which only
-// happens once they click this email's link and sign in. Bypassing that would let anyone
-// type in someone else's Oberlin address on the public form and get them "approved".
-// So this starts the same verified pipeline the self-serve signup uses: create (or reuse)
-// the membership_requests row and send the verification/signup email. The request then
-// surfaces in Member Applications once verified, for the final approval.
-export async function startMembershipFromSubmission(input: { email: string; displayName: string }, origin: string) {
+export async function startMembershipFromSubmission(input: { email: string; displayName: string }, origin: string, reviewerId: string) {
   const email = input.email.trim().toLowerCase()
-  const displayName = input.displayName.trim() || email
   if (!isOberlinEmail(email)) throw new Error('OBERLIN_EMAIL_REQUIRED')
   const supabase = createSupabaseAdminClient()
-  const { data: existing } = await supabase.from('membership_requests').select('id,status').ilike('email', email).maybeSingle()
+  const { data, error } = await supabase.rpc('prepare_member_invitation', {
+    p_email: email, p_display_name: input.displayName.trim() || email, p_reviewer_id: reviewerId,
+  })
+  if (error) throw new Error(error.message)
+  const result = data as { request_id: string; status: MembershipStatus }
+  if (result.status === 'ACTIVE') return { requestId: result.request_id, status: result.status, emailSent: false, skipped: true }
+  return { requestId: result.request_id, status: result.status, ...await sendMembershipSetupEmail(result.request_id, origin), skipped: false }
+}
 
-  if (existing) {
-    if (existing.status === 'APPROVED' || existing.status === 'ACTIVE') throw new Error(`ALREADY_MEMBER:${existing.status}`)
-    if (existing.status === 'REJECTED' || existing.status === 'SUSPENDED') throw new Error(`MEMBERSHIP_REQUEST_BLOCKED:${existing.status}`)
-    // REQUESTED / EMAIL_VERIFIED / PENDING_APPROVAL: resend rather than error, so
-    // re-clicking Approve on the submission just nudges them again.
-    const nextPath = `/member-verify?request=${encodeURIComponent(existing.id)}`
-    const verificationUrl = await generateVerificationLink(email, origin, nextPath)
-    await sendTransactionalEmail({ to: email, message: membershipVerificationEmail({ displayName, verificationUrl }) })
-    return { requestId: existing.id, status: existing.status as MembershipStatus, resent: true }
+// Email failure must not disguise a successful database approval. Persist its outcome
+// separately so the officer can resend without repeating or undoing the decision.
+export async function sendMembershipSetupEmail(requestId: string, origin: string) {
+  const supabase = createSupabaseAdminClient()
+  const { data: row, error } = await supabase.from('membership_requests').select('id,email,display_name,status,preapproved_at').eq('id', requestId).single()
+  if (error || !row) throw new Error('MEMBERSHIP_REQUEST_NOT_FOUND')
+  if (['REJECTED', 'SUSPENDED'].includes(row.status)) throw new Error('MEMBERSHIP_REQUEST_BLOCKED')
+  let emailError: string | null = null
+  try {
+    const next = row.status === 'ACTIVE' ? '/member' : row.status === 'APPROVED' ? '/member-activate' : `/member-verify?request=${encodeURIComponent(row.id)}`
+    const url = await generateMemberLink(row.email, origin, next, 'magiclink')
+    const message = row.status === 'ACTIVE' ? memberMagicLinkEmail({ displayName: row.display_name, magicUrl: url })
+      : row.status === 'APPROVED' ? membershipApprovedEmail({ displayName: row.display_name, activationUrl: url })
+      : row.preapproved_at ? membershipInvitationEmail({ displayName: row.display_name, verificationUrl: url })
+      : membershipVerificationEmail({ displayName: row.display_name, verificationUrl: url })
+    await sendTransactionalEmail({ to: row.email, message })
+  } catch (cause) {
+    // Store only an error code, never auth links, provider responses, or credentials.
+    emailError = cause instanceof Error ? cause.message.split(':')[0] : 'EMAIL_SEND_FAILED'
   }
+  const { error: saveError } = await supabase.from('membership_requests').update({ last_email_error: emailError, ...(!emailError ? { last_email_sent_at: new Date().toISOString() } : {}) }).eq('id', row.id)
+  return { emailSent: !emailError, emailError, trackingSaved: !saveError }
+}
 
-  const { data, error } = await supabase.from('membership_requests').insert({ email, display_name: displayName, status: 'REQUESTED' }).select('id').single()
-  if (error || !data) throw new Error(`MEMBERSHIP_REQUEST_CREATE_FAILED:${error?.message ?? 'unknown'}`)
-  const nextPath = `/member-verify?request=${encodeURIComponent(data.id)}`
-  const verificationUrl = await generateVerificationLink(email, origin, nextPath)
-  await sendTransactionalEmail({ to: email, message: membershipVerificationEmail({ displayName, verificationUrl }) })
-  return { requestId: data.id, status: 'REQUESTED' as const, resent: false }
+export async function inviteMembers(emailInput: string, reviewerId: string, origin: string) {
+  const emails = parseMemberEmails(emailInput)
+  const results: { email: string; outcome: 'sent' | 'failed' | 'already_active'; error?: string }[] = []
+  for (const email of emails) {
+    try {
+      const result = await startMembershipFromSubmission({ email, displayName: email }, origin, reviewerId)
+      results.push({ email, outcome: result.skipped ? 'already_active' : result.emailSent ? 'sent' : 'failed' })
+    } catch (cause) {
+      results.push({ email, outcome: 'failed', error: cause instanceof Error ? cause.message.split(':')[0] : 'INVITATION_FAILED' })
+    }
+    // Respect the mail provider's per-account rate limit for pasted batches.
+    if (email !== emails.at(-1)) await new Promise(resolve => setTimeout(resolve, 550))
+  }
+  return results
 }
 
 export async function verifyServerMembershipRequest(requestId: string, currentUser: { id: string; email: string }) {
@@ -85,12 +108,12 @@ export async function verifyServerMembershipRequest(requestId: string, currentUs
   const supabase = createSupabaseAdminClient()
   const { data, error } = await supabase.rpc('verify_membership_request', { p_request_id: requestId, p_user_id: currentUser.id })
   if (error) throw new Error(error.message)
-  return data as { request_id: string; status: 'PENDING_APPROVAL' }
+  return data as { request_id: string; status: 'PENDING_APPROVAL' | 'APPROVED' | 'ACTIVE' }
 }
 
 export async function listMembershipRequests(status: MembershipStatus | 'ALL' = 'PENDING_APPROVAL'): Promise<MembershipRequestSummary[]> {
   const supabase = createSupabaseAdminClient()
-  let query = supabase.from('membership_requests').select('id,email,display_name,status,email_verified_at,reviewed_at,review_note,created_at').order('created_at', { ascending: false })
+  let query = supabase.from('membership_requests').select('id,email,display_name,status,email_verified_at,reviewed_at,review_note,created_at,preapproved_at,last_email_sent_at,last_email_error').order('created_at', { ascending: false })
   if (status !== 'ALL') query = query.eq('status', status)
   const { data, error } = await query.limit(200)
   if (error) throw new Error(`MEMBERSHIP_REQUESTS_LOAD_FAILED:${error.message}`)
@@ -103,6 +126,9 @@ export async function listMembershipRequests(status: MembershipStatus | 'ALL' = 
     reviewedAt: row.reviewed_at,
     reviewNote: row.review_note,
     createdAt: row.created_at,
+    preapprovedAt: row.preapproved_at,
+    lastEmailSentAt: row.last_email_sent_at,
+    lastEmailError: row.last_email_error,
   }))
 }
 
@@ -117,16 +143,19 @@ export async function reviewMembershipRequest(
     const { data, error } = await supabase.rpc('reject_membership_request', { p_request_id: input.requestId, p_reviewer_id: reviewerId, p_review_note: input.note?.trim() || null })
     if (error) throw new Error(error.message)
     const result = data as { email: string; display_name: string; status: 'REJECTED' }
-    await sendTransactionalEmail({to:result.email,message:membershipRejectedEmail({displayName:result.display_name,reviewNote:input.note})})
-    return result
+    let emailSent = false
+    try { emailSent = await sendTransactionalEmail({to:result.email,message:membershipRejectedEmail({displayName:result.display_name,reviewNote:input.note})}) } catch { /* The decision remains saved even if email is unavailable. */ }
+    return { ...result, emailSent }
   }
 
-  const { data, error } = await supabase.rpc('approve_membership_request', { p_request_id: input.requestId, p_reviewer_id: reviewerId, p_review_note: input.note?.trim() || null })
-  if (error) throw new Error(error.message)
-  const result = data as { email: string; display_name: string; user_id: string; status: 'APPROVED' }
-  const activationUrl = await generateMemberLink(result.email, origin, '/member-activate', 'magiclink')
-  await sendTransactionalEmail({to:result.email,message:membershipApprovedEmail({displayName:result.display_name,activationUrl})})
-  return result
+  const { data: row, error: loadError } = await supabase.from('membership_requests').select('email,display_name,status').eq('id', input.requestId).single()
+  if (loadError || !row) throw new Error('MEMBERSHIP_REQUEST_NOT_FOUND')
+  if (row.status === 'PENDING_APPROVAL') {
+    const { error } = await supabase.rpc('approve_membership_request', { p_request_id: input.requestId, p_reviewer_id: reviewerId, p_review_note: input.note?.trim() || null })
+    if (error) throw new Error(error.message)
+    return { status: 'APPROVED', ...await sendMembershipSetupEmail(input.requestId, origin) }
+  }
+  return startMembershipFromSubmission({ email: row.email, displayName: row.display_name }, origin, reviewerId)
 }
 
 export async function activateServerMember(currentUser: { id: string; email: string }) {

@@ -1,4 +1,5 @@
-node_modules/
+node_modules
+.cache/
 .next/
 coverage/
 playwright-report/
@@ -13,4 +14,3 @@ test-results/
 
 # Third-party agent skills installed by tooling; not part of the app.
 .agents/
-.vercel

@@ -1,30 +1,51 @@
-'use client';import { useState } from 'react';import { useToast } from '@/components/ui/Toast'
-export type SubmissionRow={id:string;type:string;full_name:string;email:string;payload:Record<string,unknown>;status:string;created_at:string}
-
-// Mirrors startMembershipFromSubmission()'s thrown error codes with copy that explains
-// what actually happened, since "Approve failed" alone would not tell the officer why.
-const approveErrorLabel:Record<string,string>={
-  OBERLIN_EMAIL_REQUIRED:'This submission’s email is not an @oberlin.edu address, so it can’t start the member sign-up flow automatically.',
+'use client'
+import { formatPortalDate } from '@/lib/format/portalDate'
+import { useState } from 'react'
+import { Archive, Check, Mail, Search } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
+import Link from 'next/link'
+export type SubmissionRow = { id: string; type: string; full_name: string; email: string; payload: Record<string, unknown>; status: string; created_at: string }
+function approveErrorMessage(code: string) {
+  if (code === 'OBERLIN_EMAIL_REQUIRED') return 'An @oberlin.edu email is required to start member sign-up.'
+  if (code.startsWith('ALREADY_MEMBER')) return 'This person is already an approved member.'
+  if (code.startsWith('MEMBERSHIP_REQUEST_BLOCKED')) return 'This person has a rejected or suspended request. Check Member requests.'
+  return 'Could not start membership. Please try again.'
 }
-function approveErrorMessage(code:string){
-  if(approveErrorLabel[code])return approveErrorLabel[code]
-  if(code.startsWith('ALREADY_MEMBER'))return 'This person is already an approved member.'
-  if(code.startsWith('MEMBERSHIP_REQUEST_BLOCKED'))return 'A membership request for this email already exists and was rejected or suspended — handle it from Member Applications.'
-  return code||'Could not start membership.'
-}
-
-export function SubmissionInbox({initialRows}:{initialRows:SubmissionRow[]}){
-  const[rows,setRows]=useState(initialRows);const[busyId,setBusyId]=useState('');const toast=useToast()
-  async function setStatus(id:string,status:string){const r=await fetch('/api/admin/submissions',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({id,status})});if(!r.ok){toast('Could not update submission.','error');return}setRows(x=>x.map(v=>v.id===id?{...v,status}:v));toast('Submission updated.')}
-  async function approveMembership(id:string){
-    setBusyId(id)
-    try{
-      const r=await fetch('/api/admin/submissions/approve-membership',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id})})
-      const body=await r.json()
-      if(!r.ok){toast(approveErrorMessage(body.error??''),'error');return}
-      setRows(x=>x.map(v=>v.id===id?{...v,status:'approved'}:v))
-      toast(body.resent?'Sign-up email re-sent. They’ll appear in Member Applications once they verify.':'Approved — sign-up email sent. They’ll appear in Member Applications once they verify their Oberlin email.')
+export function SubmissionInbox({ initialRows, initialStatus = '' }: { initialRows: SubmissionRow[]; initialStatus?: string }) {
+  const [rows, setRows] = useState(initialRows), [busyId, setBusyId] = useState('')
+  const [query, setQuery] = useState(''), [status, setFilter] = useState(initialStatus), [error, setError] = useState('')
+  const toast = useToast()
+  const visible = rows.filter(row => (!status || row.status === status) && [row.full_name, row.email, row.type.replaceAll('_', ' ')].some(value => value.toLowerCase().includes(query.trim().toLowerCase())))
+  async function update(id: string, nextStatus: string, membership = false) {
+    if (busyId) return
+    setBusyId(id); setError('')
+    try {
+      const response = await fetch(membership ? '/api/admin/submissions/approve-membership' : '/api/admin/submissions', { method: membership ? 'POST' : 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(membership ? { id } : { id, status: nextStatus }) })
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        const message = membership ? approveErrorMessage(body.error ?? '') : 'Could not update this request. Please try again.'
+        setError(message); toast(message, 'error'); return
+      }
+      const body = await response.json()
+      setRows(previous => previous.map(row => row.id === id ? { ...row, status: nextStatus } : row))
+      if (membership && !body.emailSent && !body.skipped) {
+        setError('Membership approval is saved, but the email was not sent. Open Members to resend it.')
+      } else toast(membership ? body.skipped ? 'This member already has an active account.' : 'Membership approved and setup email sent. They are now listed in Members.' : nextStatus === 'archived' ? 'Request archived.' : 'Marked as reviewed.')
+    } catch {
+      const message = 'Could not update this request. Check your connection and try again.'
+      setError(message); toast(message, 'error')
     } finally { setBusyId('') }
   }
-  return <div className="submission-inbox">{rows.length?rows.map(row=><article key={row.id}><header><div><span className="status-pill">{row.status}</span><strong>{row.full_name}</strong><a href={`mailto:${row.email}`}>{row.email}</a></div><time>{new Date(row.created_at).toLocaleString()}</time></header><p className="eyebrow">{row.type.replaceAll('_',' ')}</p><dl>{Object.entries(row.payload??{}).filter(([,v])=>String(v??'').trim()).map(([k,v])=><div key={k}><dt>{k.replaceAll(/([A-Z])/g,' $1')}</dt><dd>{Array.isArray(v)?v.join(', '):String(v)}</dd></div>)}</dl><footer>{row.type==='join_club'&&row.status!=='approved'&&row.status!=='archived'&&<button className="button--cardinal" disabled={busyId===row.id} onClick={()=>approveMembership(row.id)}>{busyId===row.id?'Sending…':'Approve → start membership'}</button>}{row.status==='new'&&<button onClick={()=>setStatus(row.id,'reviewed')}>Mark reviewed</button>}{row.status!=='archived'&&<button onClick={()=>setStatus(row.id,'archived')}>Archive</button>}</footer></article>):<div className="admin-table-empty">No public submissions yet.</div>}</div>
+  return <>
+    <div className="portal-inbox-filters"><div className="content-search"><label><Search size={18}/><input type="search" aria-label="Search requests" placeholder="Search by name or email" value={query} onChange={event => setQuery(event.target.value)}/></label><select aria-label="Request status" value={status} onChange={event => setFilter(event.target.value)}><option value="">All requests</option>{['new', 'reviewed', 'approved', 'archived'].map(value => <option value={value} key={value}>{value[0].toUpperCase() + value.slice(1)}</option>)}</select><span role="status">{visible.length} shown</span></div></div>
+    {error && <p className="portal-form-error" role="alert">{error}</p>}
+    <div className="submission-inbox">{visible.map(row => <article key={row.id}><header><div><span className="status-pill">{row.status === 'new' ? 'New request' : row.status[0].toUpperCase() + row.status.slice(1)}</span><strong>{row.full_name}</strong><a href={`mailto:${row.email}`}>{row.email}</a></div><time dateTime={row.created_at}>{formatPortalDate(row.created_at)}</time></header><p className="eyebrow">{row.type.replaceAll('_', ' ')}</p><details open={row.status === 'new'}><summary>Request details</summary><dl>{Object.entries(row.payload ?? {}).filter(([, value]) => String(value ?? '').trim()).map(([key, value]) => <div key={key}><dt>{key.replaceAll(/([A-Z])/g, ' $1').replaceAll('_', ' ')}</dt><dd>{Array.isArray(value) ? value.join(', ') : String(value)}</dd></div>)}</dl></details><footer>
+      {['join_club', 'leadership_interest'].includes(row.type) && !['approved', 'archived'].includes(row.status) && <button className="button--cardinal" disabled={Boolean(busyId)} onClick={() => void update(row.id, 'approved', true)}><Mail size={16}/>{busyId === row.id ? 'Updating...' : 'Approve membership & send email'}</button>}
+      {['join_club', 'leadership_interest'].includes(row.type) && row.status === 'approved' && <Link className="button button--ghost" href="/admin/members">View member & email status</Link>}
+      {row.type === 'leadership_interest' && row.status !== 'archived' && <span className="member-list-muted">Membership only. Officer roles are managed separately.</span>}
+      {row.status === 'new' && <button disabled={Boolean(busyId)} onClick={() => void update(row.id, 'reviewed')}><Check size={16}/>Mark reviewed</button>}
+      {row.status !== 'archived' && <button disabled={Boolean(busyId)} onClick={() => void update(row.id, 'archived')}><Archive size={16}/>Archive</button>}
+    </footer></article>)}</div>
+    {!visible.length && <div className="portal-empty"><div><h2>{rows.length ? 'No matching requests' : 'No requests yet'}</h2>{(query || status) && <button className="button button--ghost" onClick={() => { setQuery(''); setFilter('') }}>Clear filters</button>}</div></div>}
+  </>
 }

@@ -1,10 +1,6 @@
 import type { Metadata } from 'next'
-import { Fraunces, Instrument_Sans, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
-
-const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-display', axes: ['opsz'] })
-const instrumentSans = Instrument_Sans({ subsets: ['latin'], variable: '--font-body' })
-const plexMono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-mono' })
+import './site.css'
 
 export const metadata: Metadata = {
   title: { default: 'Oberlin Engineering Club', template: '%s · Oberlin Engineering Club' },
@@ -12,5 +8,19 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${fraunces.variable} ${instrumentSans.variable} ${plexMono.variable}`}><body>{children}</body></html>
+  return (
+    <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body>
+        {children}
+      </body>
+    </html>
+  )
 }

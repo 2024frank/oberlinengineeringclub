@@ -2,7 +2,21 @@ import type { Metadata } from 'next'
 import { metadataForCmsPage } from '@/lib/seo/metadata'
 import { getPublishedPageBySlug } from '@/lib/page-builder/publicPages'
 import { DirectoryHero } from '@/components/public/DirectoryHero'
-import Link from 'next/link';import { ProjectFilters } from '@/components/public/filters/ProjectFilters';import { listPublishedProjects,parseProjectFilters } from '@/lib/content/projects'
-function toParams(obj:Record<string,string|string[]|undefined>){const p=new URLSearchParams();for(const[k,v]of Object.entries(obj))if(Array.isArray(v))v.forEach(x=>p.append(k,x));else if(v)p.set(k,v);return p}
-export async function generateMetadata():Promise<Metadata>{return metadataForCmsPage(await getPublishedPageBySlug("projects"))}
-export default async function ProjectsPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){const raw=await searchParams;const filters=parseProjectFilters(toParams(raw));const [projects,allProjects]=await Promise.all([listPublishedProjects(filters),listPublishedProjects({skills:[]})]);const showFilters=allProjects.length>=4;return <><DirectoryHero slug={"projects"} eyebrow={"Projects"} title={"Build something with us."} description={"OEC projects give students a chance to work on engineering problems outside class. Our first project teams are forming for 2026–27."} imageSlug={"engineering-robotics-assembly"}/><section className="directory"><div className="shell">{showFilters&&<ProjectFilters defaults={filters}/>}{projects.length?<div className="card-grid">{projects.map((p:any)=><article className="content-card" key={p.id}><div className="pill-row"><span className="status-pill">{String(p.status).replaceAll('_',' ')}</span>{p.difficulty&&<span className="status-pill status-pill--difficulty">{p.difficulty}</span>}</div><h2>{p.title}</h2><p>{p.summary}</p><div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div><Link href={`/projects/${p.slug}`}>View project →</Link></article>)}</div>:<div className="empty-state"><h2>Be part of the first project teams.</h2><p>Have an idea? Propose it. Want to build but do not have a project yet? Join OEC and we will connect you with a team.</p><Link className="button button--cardinal" href="/get-involved?type=propose_project">Propose a project</Link></div>}<aside className="empty-copy tools-note"><p><strong>Tools &amp; equipment you can use:</strong> 3D printers, a 3D scanner, digital calipers, soldering irons, wire and basic electronics supplies, wrenches, screwdrivers, and other general fabrication and repair tools.</p><p>You do not need prior experience in every skill a project lists. These projects are meant to build technical skills through hands-on work — be ready to learn unfamiliar systems, read documentation, and work through problems without an obvious answer.</p></aside></div></section></>}
+import { ProjectCards } from '@/components/public/ProjectCards'
+import { ProjectFilters } from '@/components/public/filters/ProjectFilters'
+import { listPublishedProjects,parseProjectFilters } from '@/lib/content/projects'
+import { projectCards } from '@/lib/content/projectCards'
+import { publicMedia } from '@/lib/content/publicMedia'
+import Link from 'next/link'
+export async function generateMetadata():Promise<Metadata>{return metadataForCmsPage(await getPublishedPageBySlug('projects'))}
+export default async function ProjectsPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
+  const raw=await searchParams
+  const params=new URLSearchParams()
+  for(const [key,value] of Object.entries(raw)){if(Array.isArray(value))value.forEach(v=>params.append(key,v));else if(value)params.set(key,value)}
+  const filters=parseProjectFilters(params)
+  const [projects,allProjects]=await Promise.all([listPublishedProjects(filters),listPublishedProjects({skills:[]})])
+  const media=await publicMedia(projects.map(p=>p.cover_media_id).filter(Boolean))
+  return <><DirectoryHero slug="projects" eyebrow="Projects" title="Projects" description="Explore project teams, the work involved, and how to take part."/><section className="directory"><div className="shell">{allProjects.length>=4&&<details className="advanced-filters" open={Boolean(filters.status||filters.discipline||filters.recruiting!==undefined)}><summary>More filters</summary><ProjectFilters defaults={filters}/></details>}
+  {projects.length?<ProjectCards projects={projectCards(projects,media)} searchable/>:<div className="empty-state"><h2>{allProjects.length?'No projects match these filters.':'Project teams are forming.'}</h2><p>{allProjects.length?'Try clearing your filters to see all projects.':'Contact the club to join a team or propose a project.'}</p><Link className="button button--primary" href={allProjects.length?'/projects':'/get-involved?type=propose_project'}>{allProjects.length?'Clear filters':'Propose a project'}</Link></div>}
+  </div></section></>
+}

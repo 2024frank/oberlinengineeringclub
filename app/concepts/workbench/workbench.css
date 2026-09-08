@@ -1,0 +1,371 @@
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url('/brand/workbench/barlow-condensed-semibold.ttf') format('truetype'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('/brand/workbench/ibm-plex-mono.ttf') format('truetype'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/brand/workbench/ibm-plex-sans.ttf') format('truetype'); }
+.workbench-preview {
+  --wb-ink: #282b2a;
+  --wb-red: #922a2f;
+  --wb-paper: #f4f6f0;
+  --wb-metal: #d7dcd8;
+  --wb-line: #bdc6c0;
+  --wb-cyan: #326e76;
+  color: var(--wb-ink);
+  background: #e9eae7;
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  font-size: 15px;
+  letter-spacing: 0;
+}
+.workbench-preview * { box-sizing: border-box; letter-spacing: 0; }
+.workbench-preview .concept-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.workbench-preview :is(h1,h2,h3,p) { margin: 0; }
+.workbench-preview :is(h1,h2,h3) { font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-weight: 600; color: var(--wb-ink); }
+.workbench-preview :is(button,input,select,textarea) { font: inherit; color: inherit; }
+.workbench-preview button { cursor: pointer; }
+.workbench-preview button:disabled { cursor: default; opacity: .5; }
+.workbench-preview :is(button,a,input,select,textarea):focus-visible { outline: 2px solid var(--wb-cyan); outline-offset: 4px; }
+.workbench-preview button, .workbench-preview a { -webkit-tap-highlight-color: transparent; }
+.wb-stage { position: relative; height: calc(100svh - 102px); min-height: 660px; isolation: isolate; }
+.wb-is-open .wb-stage { height: calc(100svh - 42px); min-height: 0; }
+.workbench-preview .concept-scene { inset: 0; position: absolute; }
+.workbench-preview .concept-loading { display: none; }
+.workbench-preview .concept-scene:not([data-status=ready])>canvas { opacity: 0; }
+.workbench-preview .robot-dom-world { z-index: 2; }
+.workbench-preview .robot-tablet-surface { background: transparent; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+.wb-fallback { position: absolute; inset: 9% 7%; border: 1px solid var(--wb-line); background: var(--wb-paper); }
+.wb-fallback:empty { pointer-events: none; visibility: hidden; }
+.workbench-surface { height: 100%; width: 100%; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; scrollbar-color: #8b9b94 transparent; background: transparent; color: var(--wb-ink); container: workbench-screen / size; }
+.workbench-surface[data-view=home] { display: flex; flex-direction: column; overscroll-behavior: auto; }
+.workbench-surface:not([data-view=home]) { --wb-ink: #edf0e9; --wb-paper: #19211e; --wb-line: #3c4841; --wb-red: #e19a95; --wb-cyan: #acd4c4; background: transparent; color: var(--wb-ink); }
+.wb-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 12px 16px 20px 48px; min-height: 92px; position: relative; z-index: 2; }
+.workbench-surface:not([data-view=home]) .wb-header { --wb-ink: #282b2a; --wb-red: #922a2f; --wb-cyan: #28595e; position: sticky; top: 0; color: var(--wb-ink); background: #ced3ce; padding: 15px 24px; box-shadow: 0 4px 8px #00000035; }
+.workbench-surface:not([data-view=home]) .wb-header nav button { box-shadow: inset 0 1px 0 #ffffff90, 0 2px 1px #79867c; background: #d6dbd5; }
+.wb-brand { border: 0; padding: 0; display: flex; gap: 16px; align-items: center; text-align: left; background: transparent; font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif !important; font-weight: 600 !important; font-size: 23px !important; }
+.wb-brand img { flex-shrink: 0; width: 64px; height: 64px; }
+.wb-brand small { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 400; margin-top: 3px; color: #53605a; }
+.wb-header nav { display: flex; width: 51%; align-self: center; gap: 12px; }
+.wb-header nav button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: #d6d9d6; border: 1px solid #a3aaa5; border-radius: 4px; padding: 8px 16px; min-height: 60px; font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-size: 25px; font-weight: 600; text-transform: capitalize; transition: color .16s, background .16s; }
+.wb-header nav small { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 400; color: #65756c; }
+.wb-header nav button:hover, .wb-header nav button[aria-current=page] { color: var(--wb-red); background: #ffffff30; }
+.workbench-preview[data-scene-ready=true] .workbench-surface[data-view=home] .wb-header nav button { background: transparent; border-color: transparent; }
+.wb-home { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,.95fr) minmax(0,1fr); grid-template-rows: minmax(0,1fr) 136px; gap: 18px 24px; padding: 0 12px 6px; position: relative; }
+.wb-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; text-transform: uppercase; line-height: 1.5; color: #526058; }
+.wb-home-copy { align-self: center; min-width: 0; padding: 0 0 8px 48px; container: workbench-title / inline-size; }
+.wb-home h1 { font-size: 110px; line-height: .92; text-transform: uppercase; font-weight: 600; margin: 0 0 22px; }
+.wb-home h1>.wb-word { display: block; width: max-content; max-width: 100%; white-space: nowrap; }
+.wb-home h1>.wb-word:nth-child(2) { color: var(--wb-red); }
+.workbench-preview[data-scene-ready=true] .wb-home h1>.wb-word { color: transparent; }
+.wb-home-description { line-height: 1.5; font-size: 17px; max-width: 365px; }
+.wb-mechanism-space { min-height: 0; display: flex; justify-content: flex-end; align-items: flex-start; padding: 12px; }
+.wb-mechanism-space .wb-icon { background: #272c2ce0; color: #f1f3ef; border-color: #76817b; width: 30px; height: 30px; }
+.wb-home-actions { min-width: 0; display: grid; grid-template-columns: 42% minmax(0,1fr); gap: 10px; padding: 20px 24px 20px 16px; align-items: center; }
+.wb-selector-control { display: flex; align-items: center; min-width: 0; gap: 8px; height: 100%; }
+.wb-selector-labels { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; gap: 5px; font: 10px/1.3 'IBM Plex Mono', monospace; }
+.wb-selector-labels span:first-child { color: var(--wb-red); }
+.wb-selector { flex: 1; min-width: 40px; max-width: 85px; aspect-ratio: 1; display: block; position: relative; }
+.wb-selector select { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.wb-selector:focus-within { outline: 2px solid var(--wb-cyan); outline-offset: 5px; border-radius: 50%; }
+.workbench-preview[data-scene-ready=false] .wb-selector select { opacity: 1; position: static; font-size: 12px; }
+.wb-home-drawer { display: grid; grid-template-columns: minmax(0,1fr); align-content: center; gap: 6px; min-width: 0; padding: 8px 20px 10px; color: #edf0e9; }
+.wb-drawer-projects>button { display: grid; grid-template-columns: 28px minmax(0,1fr) 16px; align-items: center; gap: 12px; width: 100%; min-height: 37px; padding: 5px 8px; margin-bottom: 3px; border: 0; border-radius: 3px; background: #2b342feb; text-align: left; box-shadow: inset 0 1px 0 #ffffff12; }
+.wb-drawer-projects strong { font-size: 12px; line-height: 1.15; font-weight: 400; }
+.wb-drawer-projects>button>span { font: 25px/.95 'Barlow Condensed', sans-serif; color: #e3a59a; }
+.wb-drawer-projects>button>svg { color: #e3a59a; }
+.wb-drawer-projects>button:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.wb-drawer-projects>p { font-size: 12px; }
+.wb-primary { display: inline-flex; justify-content: space-between; align-items: center; min-height: 48px; gap: 25px; border: 1px solid #8b2028; border-radius: 2px; padding: 12px 20px; background: var(--wb-red); color: #fff !important; box-shadow: inset 0 1px 0 #ffffff24, 0 3px 0 #76242a; font-weight: 500 !important; transition: background .16s, transform .16s, box-shadow .16s; }
+.wb-primary:hover { background: #8d2028; }
+.wb-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 #76242a; }
+.wb-primary svg, .wb-secondary svg { flex-shrink: 0; }
+.wb-join { min-width: 0; max-width: none; min-height: 60px; gap: 12px; padding: 8px 18px; font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif !important; font-size: 25px !important; font-weight: 600 !important; }
+.workbench-preview[data-scene-ready=true] .wb-join { background: transparent; box-shadow: none; border-color: transparent; }
+.workbench-preview[data-scene-ready=true] .wb-join:hover { background: #ffffff13; }
+.wb-join>svg { width: 24px; height: 24px; }
+.wb-project-shortcut { display: flex; justify-content: flex-end; align-items: center; gap: 14px; border: 0; background: transparent; padding: 3px 0; min-height: 30px; text-align: right; font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif !important; font-size: 20px !important; color: #f0b9ad !important; }
+.workbench-preview[data-scene-ready=false] .wb-home-drawer { background: #19211e; }
+.wb-project-shortcut>svg { flex-shrink: 0; }
+.wb-number { font-family: 'IBM Plex Mono', monospace; color: var(--wb-cyan); font-size: 27px; padding-right: 18px; border-right: 1px solid var(--wb-line); }
+.wb-icon { width: 36px; height: 36px; display: inline-grid; place-items: center; padding: 0; border: 1px solid #9da9a2; border-radius: 50%; background: transparent; flex-shrink: 0; }
+.wb-icon:hover, .wb-icon[aria-pressed=true] { background: var(--wb-ink); color: var(--wb-paper); }
+.wb-motion-tools { position: absolute; bottom: 6px; left: 5%; display: flex; gap: 8px; z-index: 3; }
+.wb-motion-tools .wb-icon { width: 28px; height: 28px; border: 0; }
+.wb-sheet { padding: 22px 36px 38px; min-height: calc(100% - 86px); animation: wb-console-in .55s ease-out; background: var(--wb-paper); transform-origin: center; }
+.wb-sheet-toolbar { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding-bottom: 12px; margin-bottom: 22px; }
+.wb-sheet .wb-label { color: #aebeb3; }
+.wb-sheet :is(.wb-primary,.wb-secondary) { border-radius: 4px; }
+.wb-sheet .wb-primary { background: #9e3138; border-color: #c57273; box-shadow: inset 0 1px 0 #ffffff24, 0 3px 0 #511d23; }
+.wb-sheet .wb-primary:hover { background: #b63e44; }
+.wb-sheet .wb-secondary { border-color: #667c6e; background: #26332c; }
+.wb-back { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 0; padding: 6px 0; font-size: 12px !important; }
+.wb-sheet h2 { font-size: 46px; line-height: 1.06; max-width: 790px; margin: 10px 0 24px; overflow-wrap: break-word; }
+.wb-sheet h2:focus { outline: none; }
+.wb-catalog-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; }
+.wb-catalog-heading h2 { display: flex; align-items: flex-start; gap: 16px; margin: 8px 0 0; }
+.wb-catalog-heading h2>span { font: 12px 'IBM Plex Mono', monospace; color: var(--wb-cyan); padding-top: 7px; }
+.wb-search { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.wb-search input { min-height: 44px; width: 190px; min-width: 0; border: 0; border-radius: 0; background: transparent; padding: 10px 5px; font-size: 14px; }
+.wb-catalog-filters { display: grid; grid-template-columns: minmax(0,1fr) minmax(160px,.65fr); gap: 24px; margin: 0 0 24px; padding: 4px 16px; background: #0d1511; box-shadow: inset 0 1px 3px #00000070; border: 1px solid #45554b; border-radius: 4px; }
+.wb-catalog-filters input { width: 100%; }
+.wb-discipline { display: flex; min-width: 0; padding-left: 15px; }
+.wb-discipline select { background: transparent; border: 0; min-height: 44px; width: 100%; min-width: 0; padding: 8px 2px; font-size: 13px; cursor: pointer; }
+.wb-discipline option { background: #19211e; color: #edf0e9; }
+.wb-projects { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.wb-projects>button { min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 16px; border: 1px solid #536057; border-bottom: 3px solid #0b110e; border-radius: 6px; background: #2a352e; padding: 22px; text-align: left; box-shadow: inset 0 1px 0 #a5b7ab26, 0 3px 8px #00000030; transition: background .2s, border-color .2s, transform .2s; }
+.wb-projects>button:hover { background: #354038; border-color: #9eb9a6; transform: translateY(-2px); }
+.wb-project-top,.wb-project-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.wb-project-top>svg { color: #bbccc0; }
+.wb-project-bottom { margin-top: auto; padding-top: 10px; }
+.wb-project-bottom>svg { color: #e8a099; }
+.wb-project-no { font: 12px/1.4 'IBM Plex Mono', monospace; color: #bfaaa4; }
+.wb-project-excerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.55; color: #c5cfc7; }
+.wb-projects small { display: block; font: 10px/1.5 'IBM Plex Mono', monospace; color: var(--wb-cyan); margin-bottom: 5px; }
+.wb-projects strong { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-size: 28px; font-weight: 600; line-height: 1.12; display: block; }
+.wb-project-status { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #c1ccc4; text-transform: capitalize; }
+.wb-project-title>.wb-project-status { margin-top: 10px; }
+.wb-project-status::before { content: ''; flex-shrink: 0; width: 5px; height: 5px; background: #849087; }
+.wb-project-status[data-open=true] { color: #b5d8a1; }
+.wb-project-status[data-open=true]::before { background: #b5d8a1; box-shadow: 0 0 5px #b5d8a144; }
+.wb-detail-index { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.wb-project-paging { display: flex; gap: 8px; }
+.wb-project-paging .wb-icon { border-radius: 2px; width: 38px; height: 38px; }
+.wb-empty { padding-block: 30px; }
+.wb-empty .wb-back { margin-top: 15px; color: var(--wb-red); }
+.wb-projects>button>svg { color: var(--wb-red); }
+.wb-project-detail { max-width: 780px; }
+.wb-spec { margin: 26px 0; display: flex; flex-wrap: wrap; gap: 12px; }
+.wb-spec>div { padding: 14px 18px; background: #0e1812; border-radius: 4px; min-width: 160px; }
+.wb-spec>div+div { padding-left: 18px; }
+.wb-spec dt { font: 10px 'IBM Plex Mono', monospace; text-transform: uppercase; color: #a8b8ac; margin-bottom: 7px; }
+.wb-spec dd { margin: 0; font-size: 14px; text-transform: capitalize; }
+.wb-project-summary, .wb-about-copy { max-width: 58ch; font-size: 17px; line-height: 1.75; margin-bottom: 32px; }
+.wb-about-copy p+p { margin-top: 18px; }
+.wb-about-layout { display: grid; grid-template-columns: minmax(180px,.6fr) minmax(0,1.4fr); gap: 60px; align-items: center; padding-block: 22px; }
+.wb-about-layout>header>img { display: block; margin-bottom: 24px; }
+.wb-about-layout .wb-about-copy { font-size: 19px; line-height: 1.8; }
+.wb-about-actions { display: flex; flex-wrap: wrap; gap: 16px; }
+.wb-event-list { max-width: 720px; margin: 30px 0; }
+.wb-event-list>p { font-size: 17px; line-height: 1.7; }
+.wb-event-list article { display: flex; gap: 28px; padding: 24px; margin-bottom: 16px; border: 1px solid #536057; border-radius: 6px; background: #2a352e; }
+.wb-event-list time { font: 14px 'IBM Plex Mono', monospace; color: var(--wb-red); flex-shrink: 0; padding: 12px; align-self: flex-start; background: #101813; border-radius: 3px; }
+.wb-event-list h3 { font-size: 32px; margin-bottom: 10px; }
+.wb-events-console { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,480px); max-width: 1120px; margin: 0 auto; gap: 48px; align-items: start; }
+.wb-events-console .wb-event-list { margin-block: 25px; }
+.wb-calendar-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 36ch; color: #c7d2c9; font-size: 16px; line-height: 1.7; }
+.wb-calendar-empty>svg { color: #dfa99f; }
+.wb-calendar { background: #0c1711; border: 1px solid #586c5f; border-bottom: 4px solid #030a06; border-radius: 6px; padding: 20px; box-shadow: inset 0 2px 3px #00000055, 0 3px 0 #45574a; }
+.wb-calendar>header { display: grid; grid-template-columns: 36px minmax(0,1fr) 36px; align-items: center; gap: 10px; margin-bottom: 22px; }
+.wb-calendar h3 { font-size: 28px; text-align: center; }
+.wb-calendar .wb-icon { border-radius: 3px; background: #2e3d33; border-color: #657b6c; }
+.wb-calendar-weekdays,.wb-calendar-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 7px; }
+.wb-calendar-weekdays { margin-bottom: 12px; color: #93ab9b; font: 10px 'IBM Plex Mono', monospace; text-align: center; }
+.wb-calendar-days>* { aspect-ratio: 1; min-width: 0; display: grid; place-items: center; font: 14px 'IBM Plex Mono', monospace; }
+.wb-calendar-days>span { color: #5e7366; }
+.wb-calendar-days>button { position: relative; background: #26372b; color: #eaf0e8; border: 1px solid #506757; border-bottom: 3px solid #07110b; border-radius: 3px; box-shadow: inset 0 1px 0 #aec6b228; }
+.wb-calendar-days>button:hover { background: #3e5545; }
+.wb-calendar-days>button[aria-pressed=true] { background: #993d40; border-color: #d6948d; }
+.wb-calendar-days>button[data-has-event=true]::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; background: #f2b5a6; border-radius: 50%; }
+.wb-calendar>footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; min-height: 28px; font: 10px 'IBM Plex Mono', monospace; color: #b4c9b9; }
+.wb-event-location { display: flex; align-items: center; gap: 7px; margin-top: 8px !important; }
+.wb-preview-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 12px 5%; min-height: 42px; background: #e9eae7; border-top: 1px solid #bdc6c0; font: 10px 'IBM Plex Mono', monospace; }
+.wb-preview-bar>span, .wb-preview-bar>a { display: inline-flex; gap: 7px; align-items: center; }
+.wb-preview-bar p { color: #657268; }
+.wb-preview-bar>a { color: var(--wb-cyan); text-decoration: none; }
+.wb-colophon { padding: 12px 6% 56px; color: #eef0e9; background: #232c27; border-top: 4px solid #912a30; }
+.wb-colophon .wb-label { color: #bfc9c0; }
+.wb-colophon header { display: flex; justify-content: space-between; gap: 30px; align-items: center; margin-bottom: 32px; }
+.wb-colophon>span { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-size: 32px; text-transform: uppercase; max-width: 240px; line-height: 1; }
+.wb-colophon p { font-size: 14px; line-height: 1.6; }
+.wb-colophon h2 { font-size: 44px; margin: 6px 0 10px; color: #eef0e9; }
+.wb-colophon button { display: flex; align-items: center; gap: 16px; border: 0; background: transparent; font-size: 13px; }
+.wb-colophon header>.wb-secondary { padding: 14px 18px; border: 1px solid #83998a; border-radius: 4px; background: #354239; flex-shrink: 0; }
+.wb-bench-projects { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; }
+.wb-bench-projects>button { display: flex; flex-direction: column; align-items: flex-start; padding: 26px; border: 1px solid #53635a; border-bottom: 4px solid #101812; border-radius: 6px; background: #303d33; text-align: left; gap: 22px; box-shadow: inset 0 1px 0 #ffffff10; }
+.wb-bench-projects>button:hover { background: #3d4b40; }
+.wb-bench-projects>button>svg { width: 36px; height: 36px; color: #dda09a; }
+.wb-bench-projects h3 { font-size: 30px; line-height: 1.12; color: #eef0e9; }
+.wb-bench-project-action { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: auto; width: 100%; color: #ccd8ce; font-size: 12px; }
+.wb-paper { max-width: 990px; margin: 0 auto; display: grid; grid-template-columns: minmax(165px,.65fr) minmax(0,1.35fr); gap: 20px 46px; }
+.wb-paper-head { padding: 0; margin: 0; grid-column: 1; }
+.wb-paper-head h2 { font-size: 35px; margin: 10px 0 0; }
+.wb-step-number { display: flex; align-items: center; height: 74px; font: 64px/1 'Barlow Condensed', sans-serif; color: #dba098; margin: 18px 0; }
+.wb-paper-head p, .wb-small { font: 11px/1.7 'IBM Plex Mono', monospace; color: #b7c7bc; }
+.wb-form-steps { grid-column: 1; grid-row: 2; align-self: start; display: grid; grid-template-columns: minmax(0,1fr); gap: 9px; margin: 0; padding: 0; list-style: none; }
+.wb-form-steps>* { font: 11px/1.5 'IBM Plex Mono', monospace; padding: 10px 12px; display: flex; align-items: center; gap: 14px; color: #b6c5ba; background: #111b15; border-radius: 3px; }
+.wb-form-steps [aria-current=step] { color: #f6eee8; background: #8a3033; box-shadow: inset 3px 0 0 #e2b292; }
+.wb-form-steps li>span { font-size: 16px; }
+.wb-registration-step { grid-column: 2; grid-row: 1 / 3; min-width: 0; }
+.wb-paper label { display: flex; flex-direction: column; gap: 9px; font-size: 13px; }
+.wb-paper :is(input:not([type=checkbox]),textarea) { width: 100%; border: 1px solid #708477; background: #0d1711; color: #edf0e9; border-radius: 4px; padding: 12px; min-height: 46px; font-size: 16px; box-shadow: inset 0 2px 3px #00000055; }
+.wb-paper input[type=checkbox] { accent-color: var(--wb-red); width: 19px; height: 19px; margin: 0; flex-shrink: 0; }
+.wb-field-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 20px; margin: 0 0 24px; }
+.wb-interest-list { padding: 0; border: 0; margin: 0 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.wb-interest-list legend { font: 11px 'IBM Plex Mono', monospace; padding-bottom: 15px; color: #c3d0c7; }
+.wb-interest-list label { flex-direction: row; align-items: center; min-height: 64px; gap: 12px; padding: 12px; border: 1px solid #52695a; border-radius: 4px; background: #2a382e; cursor: pointer; }
+.wb-interest-list label:has(input:checked) { border-color: #dca39d; background: #463132; }
+.wb-form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin: 24px 0 18px; padding-top: 4px; }
+.wb-secondary { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; min-height: 46px; border: 1px solid #9aa99c; border-radius: 0; background: transparent; }
+.wb-error { color: #ffa99d; font-size: 13px; margin: 10px 0 !important; }
+.wb-receipt { position: relative; display: block; max-width: 620px; margin: 0 auto; padding: 0; background: transparent; animation: wb-console-in .35s ease-out; }
+.wb-receipt .wb-form-steps { grid-template-columns: repeat(3,minmax(0,1fr)); margin: 22px 0; }
+.wb-receipt-stamp { display: table; margin: 0 0 22px; padding: 6px 10px; color: #e8b3a8; background: #4b302e; border-radius: 3px; font: 11px 'IBM Plex Mono', monospace; }
+.wb-registration-step { animation: wb-feed .3s ease-out; }
+.wb-receipt>svg { color: var(--wb-cyan); }
+.wb-paper dl>div { display: grid; grid-template-columns: 100px minmax(0,1fr); gap: 20px; padding: 14px 16px; margin-bottom: 8px; background: #101a14; border-radius: 3px; }
+.wb-paper dt { font: 11px 'IBM Plex Mono', monospace; color: #b6c8bb; }
+.wb-paper dd { margin: 0; overflow-wrap: anywhere; }
+.wb-paper dl.wb-field-grid { display: block; }
+@keyframes wb-feed { from { transform: translateY(-28px); } to { transform: translateY(0); } }
+@keyframes wb-drawer { from { transform: perspective(1000px) translateY(38px) rotateX(5deg); } to { transform: perspective(1000px) translateY(0) rotateX(0); } }
+@keyframes wb-receipt-feed { from { clip-path: inset(0 0 65%); transform: translateY(-16px); } to { clip-path: inset(0); transform: translateY(0); } }
+@keyframes wb-console-in { 0%,30% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+@media(max-width:1100px) {
+  .wb-home-copy { padding-left: 12px; }
+  .wb-brand span { max-width: 175px; }
+  .wb-header { padding: 8px 12px 16px; gap: 12px; }
+  .wb-header nav button { padding-inline: 10px; }
+}
+@media(max-width:759px) {
+  .wb-stage { height: calc(100svh - 68px); min-height: 650px; }
+  .wb-is-open .wb-stage { height: calc(100svh - 38px); min-height: 0; }
+  .wb-fallback { inset: 9% 4.5%; }
+  .wb-header { flex-wrap: wrap; padding: 6px 8px 10px; gap: 6px; min-height: 90px; }
+  .wb-brand img { width: 34px; height: 34px; }
+  .wb-brand span { max-width: none; font-size: 15px; }
+  .wb-brand small { font-size: 9px; }
+  .wb-header nav { width: 100%; justify-content: space-between; gap: 8px; }
+  .wb-header nav button { justify-content: center; flex-direction: row; gap: 6px; flex: 1; padding: 6px; min-height: 34px; font-size: 18px; }
+  .wb-header nav small { font-size: 9px; }
+  .wb-home { display: grid; grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(100px,1fr) 68px 86px; min-height: 0; padding: 2px 8px 5px; gap: 9px; }
+  .wb-home-copy { align-self: stretch; padding: 0; }
+  .wb-home .wb-label { font-size: 8px; }
+  .wb-home h1 { font-size: 48px; line-height: .88; margin: 3px 0 10px; }
+  .wb-home-description { font-size: 11px; line-height: 1.45; max-width: 250px; }
+  .wb-mechanism-space { min-height: 100px; padding: 7px; align-items: flex-start; }
+  .wb-home-actions { grid-template-columns: 43% minmax(0,1fr); padding: 8px 14px; gap: 12px; }
+  .wb-selector-labels { font-size: 7px; gap: 3px; }
+  .wb-selector { max-width: 46px; }
+  .wb-join { min-height: 40px; font-size: 20px !important; padding: 5px 8px; gap: 6px; }
+  .wb-join>svg { width: 19px; height: 19px; }
+  .wb-home-drawer { padding: 3px 10px; gap: 1px; }
+  .wb-drawer-projects>button { grid-template-columns: 20px minmax(0,1fr) 14px; gap: 7px; min-height: 27px; padding: 3px 0; }
+  .wb-drawer-projects strong { font-size: 10px; }
+  .wb-drawer-projects>button>span { font-size: 20px; }
+  .wb-project-shortcut { min-height: 27px; gap: 8px; font-size: 17px !important; }
+  .wb-project-shortcut .wb-number { display: none; }
+  .wb-project-shortcut>svg { width: 18px; }
+  .wb-sheet { padding: 16px 17px 26px; }
+  .wb-sheet-toolbar { margin-bottom: 22px; padding-bottom: 12px; }
+  .wb-sheet h2 { font-size: 36px; }
+  .wb-catalog-heading { gap: 16px; }
+  .wb-search { width: 100%; }
+  .wb-search input { width: 100%; }
+  .wb-projects { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .wb-projects>button { gap: 14px; padding: 20px; }
+  .wb-project-no { font-size: 11px; }
+  .wb-projects strong { font-size: 26px; }
+  .wb-projects small { font-size: 10px; line-height: 1.5; }
+  .wb-catalog-filters { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .wb-discipline { border-left: 0; border-top: 1px solid var(--wb-line); padding-left: 0; }
+  .wb-discipline select { font-size: 14px; }
+  .wb-project-summary, .wb-about-copy { font-size: 15px; line-height: 1.65; }
+  .wb-about-layout { grid-template-columns: minmax(0,1fr); gap: 18px; padding-block: 8px; }
+  .wb-about-layout>header>img { width: 86px; height: 86px; margin-bottom: 18px; }
+  .wb-about-layout .wb-about-copy { font-size: 16px; line-height: 1.7; }
+  .wb-spec { grid-template-columns: 1fr; }
+  .wb-spec>div { min-width: 0; width: 100%; }
+  .wb-spec>div+div { padding-left: 18px; }
+  .wb-event-list article { gap: 15px; flex-direction: column; padding: 20px; }
+  .wb-event-list time { font-size: 11px; }
+  .wb-event-list h3 { font-size: 28px; }
+  .wb-events-console { grid-template-columns: minmax(0,1fr); gap: 30px; }
+  .wb-calendar { padding: 12px; }
+  .wb-calendar h3 { font-size: 23px; }
+  .wb-calendar-weekdays,.wb-calendar-days { gap: 4px; }
+  .wb-calendar-days>* { font-size: 11px; min-height: 30px; }
+  .wb-calendar>footer { font-size: 8px; }
+  .wb-preview-bar { min-height: 38px; padding: 9px 4.5%; font-size: 9px; gap: 10px; }
+  .wb-preview-bar p { display: none; }
+  .wb-colophon { padding: 18px 5% 30px; }
+  .wb-colophon header { align-items: flex-start; flex-direction: column; gap: 20px; }
+  .wb-bench-projects { grid-template-columns: minmax(0,1fr); gap: 16px; }
+  .wb-motion-tools { bottom: 0; }
+  .wb-field-grid { grid-template-columns: 1fr; gap: 20px; }
+  .wb-interest-list { grid-template-columns: 1fr; }
+  .wb-paper { display: block; }
+  .wb-paper-head { position: relative; padding-right: 50px; }
+  .wb-paper-head h2 { font-size: 32px; }
+  .wb-step-number { position: absolute; right: 0; top: 0; font-size: 46px; height: 55px; margin: 0; }
+  .wb-form-steps { gap: 5px; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 22px 0; }
+  .wb-form-steps>* { font-size: 9px; padding: 9px 7px; gap: 5px; flex-wrap: wrap; }
+  .wb-form-steps li>span { font-size: 12px; }
+  .wb-form-actions { flex-wrap: wrap; }
+  .wb-form-actions .wb-primary { flex: 1; }
+  .wb-receipt { padding: 0; }
+  .wb-paper dl>div { grid-template-columns: 65px 1fr; gap: 12px; }
+}
+@media(max-width:359px) { .wb-home h1 { font-size: 42px; } }
+@media(max-width:759px) and (max-height:640px) {
+  .wb-stage { min-height: 0; }
+  .wb-header { min-height: 70px; padding: 3px 8px 8px; gap: 3px; }
+  .wb-brand img { width: 26px; height: 26px; }
+  .wb-brand { gap: 7px; line-height: 1.1; }
+  .wb-brand span { font-size: 13px; }
+  .wb-brand small { font-size: 8px; line-height: 1.2; }
+  .wb-header nav button { padding: 5px 4px; min-height: 28px; font-size: 17px; }
+  .wb-home { min-height: 0; grid-template-rows: auto minmax(75px,1fr) 50px 34px; padding: 0 6px 2px; gap: 4px; }
+  .wb-home-copy>.wb-label { display: none; }
+  .wb-home h1 { font-size: 34px; margin: 0 0 8px; }
+  .wb-home-description { font-size: 10px; line-height: 1.35; }
+  .wb-mechanism-space { min-height: 75px; padding: 4px; }
+  .wb-mechanism-space .wb-icon { width: 28px; height: 28px; }
+  .wb-home-actions { grid-template-columns: 40% minmax(0,1fr); padding: 7px 10px; gap: 10px; }
+  .wb-selector { max-width: 40px; min-width: 32px; }
+  .wb-selector-labels { font-size: 6px; gap: 2px; }
+  .wb-join { min-height: 34px; font-size: 17px !important; padding: 5px 6px; }
+  .wb-join span { white-space: nowrap; }
+  .wb-join>svg { height: 17px; width: 17px; }
+  .wb-drawer-projects { display: none; }
+  .wb-project-shortcut { min-height: 24px; font-size: 17px !important; }
+}
+.workbench-preview[data-paused=true] :is(.wb-sheet,.wb-receipt,.wb-registration-step) { animation: none; }
+@media(min-width:760px) {
+  @container workbench-title (max-width: 520px) { .wb-home h1 { font-size: 98px; } }
+  @container workbench-title (max-width: 465px) { .wb-home h1 { font-size: 86px; } }
+  @container workbench-title (max-width: 415px) { .wb-home h1 { font-size: 76px; } }
+  @container workbench-title (max-width: 365px) { .wb-home h1 { font-size: 66px; } }
+  @container workbench-title (max-width: 320px) { .wb-home h1 { font-size: 57px; } }
+  @container workbench-screen (max-width: 780px) {
+    .wb-about-layout { gap: 28px; }
+    .wb-about-layout .wb-about-copy { font-size: 16px; }
+    .wb-events-console { grid-template-columns: minmax(0,.85fr) minmax(0,1fr); gap: 22px; }
+    .wb-calendar { padding: 14px; }
+    .wb-calendar-days>* { font-size: 11px; }
+    .wb-calendar-weekdays,.wb-calendar-days { gap: 4px; }
+    .wb-brand { font-size: 19px !important; gap: 10px; }
+    .wb-brand img { width: 46px; height: 46px; }
+    .wb-home { gap: 16px; grid-template-rows: minmax(0,1fr) 112px; }
+    .wb-home-actions { padding: 12px; gap: 10px; }
+    .wb-selector-labels { font-size: 8px; }
+    .wb-selector { max-width: 64px; }
+    .wb-join { font-size: 21px !important; padding: 5px 10px; min-height: 50px; }
+    .wb-home-drawer { padding: 4px 10px; gap: 2px; }
+    .wb-drawer-projects strong { font-size: 10px; }
+    .wb-drawer-projects>button { gap: 7px; min-height: 30px; }
+    .wb-home-description { font-size: 14px; }
+  }
+  @container workbench-screen (max-height: 510px) {
+    .wb-header { min-height: 74px; padding-bottom: 14px; }
+    .wb-brand img { width: 46px; height: 46px; }
+    .wb-header nav button { min-height: 50px; }
+    .wb-home { grid-template-rows: minmax(0,1fr) 102px; gap: 12px 20px; }
+    .wb-home h1 { font-size: 67px; margin-bottom: 12px; }
+    .wb-home-description { font-size: 13px; }
+    .wb-home-actions { padding-block: 10px; }
+    .wb-drawer-projects>button { min-height: 29px; }
+    .wb-home-drawer { padding-block: 3px; gap: 2px; }
+  }
+  @container workbench-screen (max-height: 410px) {
+    .wb-home h1 { font-size: 54px; }
+    .wb-home { grid-template-rows: minmax(0,1fr) 86px; }
+    .wb-drawer-projects>button:nth-child(2) { display: none; }
+  }
+}
+@media(prefers-reduced-motion:reduce) { .wb-sheet,.wb-receipt,.wb-registration-step { animation: none; } .workbench-preview button { transition: none; } }

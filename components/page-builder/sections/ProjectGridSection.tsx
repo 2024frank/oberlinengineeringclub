@@ -1,2 +1,11 @@
-import Link from 'next/link'; import type { z } from 'zod'; import type { projectGridSchema } from '@/lib/page-builder/schemas/engineering'; import type { PageRenderContext } from '@/lib/page-builder/types'
-export function ProjectGridSection({section,context}:{section:z.infer<typeof projectGridSchema>;context?:PageRenderContext}){const projects=(context?.projects??[]).slice(0,section.limit);return <section className={`cms-section${projects.length?'':' cms-section--tight'}`}><div className="shell"><div className="section-heading">{section.eyebrow&&<p className="eyebrow">{section.eyebrow}</p>}<h2>{section.heading}</h2></div>{projects.length?<div className="card-grid">{projects.map((p:any)=><article className="content-card" key={p.id??p.slug}><span className="status-pill">{String(p.status??'Project')}</span><h3>{String(p.title??'')}</h3><p>{String(p.summary??'')}</p>{p.slug&&<Link href={`/projects/${p.slug}`}>View project →</Link>}</article>)}</div>:<div className="empty-copy"><p>OEC’s first project teams are forming this fall. Bring an idea, or join one started by another student.</p><Link className="text-link" href="/get-involved?type=propose_project">Propose a project →</Link></div>}</div></section>}
+import Link from 'next/link'
+import { ArrowUpRight } from 'lucide-react'
+import type { z } from 'zod'
+import type { projectGridSchema } from '@/lib/page-builder/schemas/engineering'
+import type { PageRenderContext } from '@/lib/page-builder/types'
+import { ProjectCards } from '@/components/public/ProjectCards'
+import { projectCards } from '@/lib/content/projectCards'
+export function ProjectGridSection({section,context}:{section:z.infer<typeof projectGridSchema>;context?:PageRenderContext}) {
+  const records=(context?.projects??[]).filter(p=>!section.featuredOnly||p.featured).slice(0,section.limit)
+  return <section className="cms-section projects-section"><div className="shell"><div className="section-heading section-heading--row"><h2>{section.heading}</h2><Link className="text-link" href="/projects">All projects <ArrowUpRight size={18}/></Link></div>{records.length?<ProjectCards projects={projectCards(records,context?.media)} searchable/>:<div className="empty-state"><h3>Project details will be posted here.</h3><Link className="text-link" href="/get-involved?type=propose_project">Propose a project <ArrowUpRight size={18}/></Link></div>}</div></section>
+}

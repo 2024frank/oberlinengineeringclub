@@ -1,8 +1,30 @@
-import { CoverImage } from '@/components/public/CoverImage'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { SaveButton } from '@/components/member/SaveButton'
 import { getCurrentMember } from '@/lib/auth/memberSession'
 import { getPublishedProject } from '@/lib/content/projects'
 import { isSavedItem } from '@/lib/members/saves'
-export default async function ProjectPage({params}:{params:Promise<{slug:string}>}){const{slug}=await params;const p:any=await getPublishedProject(slug);if(!p)notFound();const member=await getCurrentMember();const saved=member?await isSavedItem(member.userId,'PROJECT',p.id):false;return <><section className={`detail-hero${p.cover_media_id?' detail-hero--image':''}`}><CoverImage mediaId={p.cover_media_id}/><div className="shell"><div className="pill-row"><span className="status-pill">{String(p.status).replaceAll('_',' ')}</span>{p.difficulty&&<span className="status-pill status-pill--difficulty">{p.difficulty}</span>}</div><h1>{p.title}</h1><p>{p.summary}</p><div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div></div></section><section className="detail-body"><div className="shell detail-grid"><div className="prose">{p.problem&&<><h2>Problem</h2><p>{p.problem}</p></>}{p.goal&&<><h2>Goal</h2><p>{p.goal}</p></>}{p.skills?.length>0&&<><h2>Skills you will use or learn</h2><div className="tag-row">{p.skills.map((s:string)=><span key={s}>{s}</span>)}</div></>}{p.timeline?.length>0&&<><h2>Timeline</h2><pre className="structured-data">{JSON.stringify(p.timeline,null,2)}</pre></>}{p.updates?.length>0&&<><h2>Project updates</h2>{p.updates.map((u:any)=><article className="update" key={u.id}><small>{u.update_date??''}</small><h3>{u.title}</h3><p>{u.summary}</p></article>)}</>}</div><aside className="detail-aside"><h2>Project details</h2><SaveButton itemType="PROJECT" itemId={p.id} canSave={Boolean(member)} initialSaved={saved}/><dl>{p.difficulty&&<><dt>Difficulty</dt><dd>{p.difficulty}</dd></>}<dt>Lead</dt><dd>{p.lead_name||'Not publicly listed'}</dd><dt>Next step</dt><dd>{p.next_step||'Not publicly listed'}</dd><dt>Recruiting</dt><dd>{p.recruiting?'Yes':'Not currently'}</dd></dl>{p.recruiting&&<Link className="button button--cardinal" href={member?`/member/applications?project=${p.id}`:'/member/login'}>{member?'Apply to join project':'Sign in to apply'}</Link>}{p.github_url&&<a href={p.github_url} target="_blank" rel="noreferrer">GitHub ↗</a>}{p.external_url&&<a href={p.external_url} target="_blank" rel="noreferrer">Project link ↗</a>}</aside></div></section></>}
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata> {
+  const project=await getPublishedProject((await params).slug)
+  return {title:project?.title??'Project not found',description:project?.summary}
+}
+export default async function ProjectPage({params}:{params:Promise<{slug:string}>}) {
+  const {slug}=await params
+  const p=await getPublishedProject(slug)
+  if(!p)notFound()
+  const member=await getCurrentMember()
+  const saved=member?await isSavedItem(member.userId,'PROJECT',p.id):false
+  const timeline=(p.timeline??[]) as Array<{label?:string;title?:string;body?:string;description?:string}>
+  return <><section className="project-detail-heading"><div className="shell"><Link className="breadcrumb" href="/projects"><ArrowLeft size={16}/>All projects</Link><span className="project-state">{String(p.status).replaceAll('_',' ')}</span><h1>{p.title}</h1><p>{p.summary}</p><div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div></div></section>
+  <section className="detail-body"><div className="shell detail-grid"><div className="prose">
+    {!p.problem&&!p.goal&&p.summary&&<><h2>Project brief</h2><p>{p.summary}</p></>}
+    {p.problem&&<><h2>Problem</h2><p>{p.problem}</p></>}
+    {p.goal&&<><h2>Goal</h2><p>{p.goal}</p></>}
+    {p.skills?.length>0&&<><h2>Skills you can contribute</h2><ul className="project-detail-skills" aria-label="Project skills">{p.skills.map((skill:string)=><li key={skill}>{skill}</li>)}</ul></>}
+    {timeline.length>0&&<><h2>Timeline</h2><ol className="project-detail-timeline">{timeline.map((step,index)=><li key={index}><small>{step.label}</small><h3>{step.title}</h3><p>{step.body??step.description}</p></li>)}</ol></>}
+    {p.updates?.length>0&&<><h2>Project updates</h2>{p.updates.map((u:{id:string;update_date?:string;title:string;summary:string})=><article className="update" key={u.id}><small>{u.update_date}</small><h3>{u.title}</h3><p>{u.summary}</p></article>)}</>}
+  </div>
+  <aside className="detail-aside"><h2>Take part</h2><p>Contact the club about joining this project.</p><Link className="button button--primary" href={'/get-involved?type=join_project&project='+encodeURIComponent(p.title)}>Express interest <ArrowUpRight size={17}/></Link><SaveButton itemType="PROJECT" itemId={p.id} canSave={Boolean(member)} initialSaved={saved}/><dl>{p.difficulty&&<><dt>Difficulty</dt><dd>{p.difficulty}</dd></>}{p.lead_name&&<><dt>Lead</dt><dd>{p.lead_name}</dd></>}{p.next_step&&<><dt>Next step</dt><dd>{p.next_step}</dd></>}</dl>{p.recruiting&&<Link className="text-link" href={member?'/member/applications?project='+p.id:'/member/login'}>{member?'Apply to join project':'Sign in to apply'}</Link>}{p.github_url&&<a className="text-link" href={p.github_url} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16}/></a>}{p.external_url&&<a className="text-link" href={p.external_url} target="_blank" rel="noreferrer">Project website <ArrowUpRight size={16}/></a>}</aside></div></section></>
+}

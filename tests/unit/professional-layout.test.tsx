@@ -60,6 +60,17 @@ it('passes the actual homepage identity through the CMS renderer', async () => {
   const { CmsPage } = await import('@/components/public/CmsPage')
   const page = pageSnapshotSchema.parse({ pageId: '00000000-0000-4000-8000-000000000098', slug: 'home', title: 'Home', sections: [{ stableKey: 'hero', type: 'hero', isVisible: true, layout: 'split', headline: 'Build things. Learn together.', body: '' }] })
   render(await CmsPage({ page }))
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('OberlinEngineeringClub.')
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('OberlinEngineering Club.')
   expect(screen.getByRole('navigation', { name: 'Get started' })).toBeVisible()
+})
+
+it('puts project discovery ahead of the legacy homepage discipline introduction', async () => {
+  const { CmsPage } = await import('@/components/public/CmsPage')
+  const page = pageSnapshotSchema.parse({ pageId: '00000000-0000-4000-8000-000000000098', slug: 'home', title: 'Home', sections: [
+    { stableKey: 'hero', type: 'hero', isVisible: true, layout: 'split', headline: 'Build things. Learn together.', body: '' },
+    { stableKey: 'disciplines', type: 'discipline_grid', isVisible: true, heading: 'Engineering disciplines', items: [{ name: 'Electrical', description: 'Circuits and sensors.' }] },
+    { stableKey: 'projects', type: 'project_grid', isVisible: true, heading: 'Projects', limit: 3, featuredOnly: false },
+  ] })
+  render(await CmsPage({ page }))
+  expect(screen.getAllByRole('heading', { level: 2 }).map(heading => heading.textContent)).toEqual(['Projects', 'Areas of interest'])
 })

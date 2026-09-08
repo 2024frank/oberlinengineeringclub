@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { BrandLogo } from '@/components/brand/BrandLogo'
-export function PublicFooter({contactEmail='oberlinengineeringclub@oberlin.edu',footerText='Build things. Learn together.',socialLinks={},badgeSrc}:{contactEmail?:string;footerText?:string;socialLinks?:Record<string,string>;badgeSrc?:string|null}) {
+import { publicCopy } from '@/lib/content/publicCopy'
+export function PublicFooter({contactEmail='oberlinengineeringclub@oberlin.edu',footerText='Student engineering projects at Oberlin College.',socialLinks={},badgeSrc}:{contactEmail?:string;footerText?:string;socialLinks?:Record<string,string>;badgeSrc?:string|null}) {
+footerText = publicCopy(footerText)
 const officerSignIn = (
   // eslint-disable-next-line @next/next/no-html-link-for-pages -- This route redirects to the separate officer origin.
   <a href="/admin/login">Officer sign in</a>

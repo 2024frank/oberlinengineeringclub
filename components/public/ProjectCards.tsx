@@ -18,9 +18,11 @@ export type ProjectCardData = {
 export function ProjectCards({
   projects,
   searchable = false,
+  layout = 'grid',
 }: {
   projects: ProjectCardData[];
   searchable?: boolean;
+  layout?: 'grid' | 'list';
 }) {
   const [query, setQuery] = useState("");
   const ready = useFormReady();
@@ -64,10 +66,10 @@ export function ProjectCards({
               </option>
             ))}
           </select>
-          <span role="status">{filtered.length} projects</span>
+          <span role="status">{filtered.length} {filtered.length === 1 ? 'project' : 'projects'}</span>
         </div>
       )}
-      <div className="project-grid">
+      <div className={'project-grid' + (layout === 'list' ? ' project-grid--list' : '')}>
         {filtered.map((p) => (
           <Link
             className="project-tile"
@@ -80,7 +82,7 @@ export function ProjectCards({
                   src={p.image.url}
                   alt={p.image.alt || p.title}
                   fill
-                  sizes="(max-width:600px) 90vw,(max-width:1000px) 44vw,390px"
+                  sizes={layout === 'list' ? '(max-width:600px) 105px,(max-width:950px) 160px,(max-width:1150px) 180px,210px' : '(max-width:600px) 90vw,(max-width:1000px) 44vw,390px'}
                 />
               </div>
             )}

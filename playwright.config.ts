@@ -7,7 +7,7 @@ export default defineConfig({
     command: 'npm run dev', url: 'http://127.0.0.1:3000', reuseExistingServer: true, timeout: 120_000
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], launchOptions: { channel: process.env.PLAYWRIGHT_CHANNEL } } },
     { name: 'mobile', use: { ...devices['iPhone 13'] } }
   ]
 })

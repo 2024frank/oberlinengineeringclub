@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
 import { PageRenderer } from '@/components/page-builder/PageRenderer'
+afterEach(cleanup)
 
 describe('PageRenderer', () => {
   it('renders validated visible sections and skips hidden sections', () => {

@@ -1,10 +1,11 @@
 import { expect,test } from '@playwright/test'
 
-test('public navigation is keyboard operable with visible focus',async({page})=>{
+test('public navigation is keyboard operable with visible focus',async({page,browserName})=>{
   await page.goto('/')
-  await page.keyboard.press('Tab')
+  const nextFocus=browserName==='webkit'?'Alt+Tab':'Tab'
+  await page.keyboard.press(nextFocus)
   await expect(page.getByRole('link',{name:'Skip to content'})).toBeFocused()
-  await page.keyboard.press('Tab')
+  await page.keyboard.press(nextFocus)
   await expect(page.getByRole('link',{name:'Oberlin Engineering Club home'})).toBeFocused()
   await expect(page.getByRole('link',{name:'Oberlin Engineering Club home'})).toHaveCSS('outline-style','solid')
 })
@@ -12,10 +13,11 @@ test('public navigation is keyboard operable with visible focus',async({page})=>
 test('mobile public menu can be opened and closed without a mouse',async({page})=>{
   await page.setViewportSize({width:390,height:844})
   await page.goto('/')
-  const menu=page.getByRole('button',{name:'Open navigation'})
+  const menu=page.locator('.public-menu')
+  await expect(menu).toBeEnabled()
   await menu.focus();await page.keyboard.press('Enter')
   await expect(menu).toHaveAttribute('aria-expanded','true')
-  await expect(page.getByRole('navigation',{name:'Primary navigation'})).toBeVisible()
+  await expect(page.getByRole('navigation',{name:'All pages'})).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(menu).toHaveAttribute('aria-expanded','false')
 })

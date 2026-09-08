@@ -2,6 +2,7 @@
 .git
 .next
 .vercel
+.cache
 node_modules
 .agents
 .claude

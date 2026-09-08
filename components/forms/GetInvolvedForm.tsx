@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Check, CheckCheck, CircuitBoard, Cog, Cpu, FlaskConical, Bot, Waves, Copy } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCheck, ChevronDown, CircuitBoard, Cog, Cpu, FlaskConical, Bot, Waves, Copy } from 'lucide-react'
 import { submissionSchema } from '@/lib/submissions/schema'
 
 const options = [['join_club', 'Join the club'], ['join_project', 'Join a project'], ['propose_project', 'Propose a project'], ['leadership_interest', 'Explore leadership'], ['event_volunteer', 'Help with events']] as const
@@ -97,7 +97,7 @@ export function GetInvolvedForm({ defaultType = 'join_club', defaultProject = ''
           <h1 ref={heading} tabIndex={-1}>{step === 0 ? capstoneRequest ? 'Discuss a capstone' : title : step === 1 ? 'Your details' : 'Review your request'}</h1>
           <p className="join-intro">{step === 0 ? proposal ? 'Tell us what you want to work on and what help you need.' : 'All majors are welcome. No previous engineering experience required.' : step === 1 ? 'We will follow up at the email you provide.' : 'Your request will go to the club officers.'}</p>
           {step === 0 && <>
-            <label>I would like to<select name="type" value={type} onChange={event => { setType(event.target.value); setFieldErrors({}) }}>{options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+            <label>I would like to<span className="join-select"><select name="type" value={type} onChange={event => { setType(event.target.value); setFieldErrors({}) }}>{options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select><ChevronDown size={18} aria-hidden="true"/></span></label>
             {type === 'join_project' && input('project', 'Project', true)}
             {proposal && <>
               <label>What would you like to build?<textarea aria-label="What would you like to build?" name="projectIdea" value={fields.projectIdea} onChange={event => update('projectIdea', event.target.value)} rows={5} maxLength={5000} required aria-invalid={Boolean(fieldErrors.projectIdea)} aria-describedby={fieldErrors.projectIdea ? 'project-idea-error' : undefined}/>{fieldErrors.projectIdea && <small id="project-idea-error" role="alert">{fieldErrors.projectIdea[0]}</small>}</label>

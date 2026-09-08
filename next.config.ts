@@ -20,6 +20,9 @@ const nextConfig: NextConfig = {
     // rather than an on-demand optimization.
     deviceSizes: [640, 828, 1080, 1440, 1920],
     imageSizes: [96, 256, 420],
+    // Hero/cover components request quality 72; without it in the allowed list
+    // Next falls back and re-encodes at 75, defeating the shared cache.
+    qualities: [72, 75],
     minimumCacheTTL: 60 * 60 * 24 * 30
   }
 }

@@ -18,6 +18,13 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
+it('shows the published difficulty alongside the existing project details', async () => {
+  fixture.project.difficulty = 'Intermediate'
+  render(await ProjectPage({ params: Promise.resolve({ slug: 'ender-3-klipper-upgrade' }) }))
+  expect(screen.getByText('Difficulty', { selector: 'dt' })).toBeVisible()
+  expect(screen.getByText('Intermediate', { selector: 'dd' })).toBeVisible()
+})
+
 it('replaces the hidden legacy photo frame with the published brief and skills', async () => {
   const { container } = render(await ProjectPage({ params: Promise.resolve({ slug: 'ender-3-klipper-upgrade' }) }))
   expect(container.querySelector('.project-detail-photo')).toBeNull()

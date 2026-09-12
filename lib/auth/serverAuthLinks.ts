@@ -1,7 +1,7 @@
-export type OecEmailOtpType = 'invite' | 'magiclink' | 'recovery'
+export type OecEmailOtpType = 'signup' | 'invite' | 'magiclink' | 'recovery'
 
 export function normalizeEmailOtpType(value: string): OecEmailOtpType {
-  if (value === 'invite' || value === 'magiclink' || value === 'recovery') return value
+  if (value === 'signup' || value === 'invite' || value === 'magiclink' || value === 'recovery') return value
   throw new Error('AUTH_LINK_TYPE_INVALID')
 }
 

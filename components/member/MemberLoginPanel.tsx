@@ -1,19 +1,16 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 
-export function MemberLoginPanel() {
+export function MemberLoginPanel({ authError, status }: { authError?: string; status?: string } = {}) {
   const router = useRouter()
   const [mode,setMode] = useState<'password'|'magic'|'reset'|'request'>('password')
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
-  useEffect(() => {
-    const status = new URLSearchParams(window.location.search).get('status')
-    if (status === 'approval_required') setNotice('Your OEC member account must be approved and active before you can enter the member portal.')
-    if (status === 'password_reset') setNotice('Password updated. Sign in with your new password.')
-  }, [])
+  const [error, setError] = useState(authError === 'auth_link' ? 'This email link has expired or has already been used. Request a new setup email below and open the newest message.' : '')
+  const [notice, setNotice] = useState(status === 'approval_required'
+    ? 'Your OEC member account must be approved and active before you can enter the member portal.'
+    : status === 'password_reset' ? 'Password updated. Sign in with your new password.' : '')
   const [busy, setBusy] = useState('')
 
   async function passwordSignIn(event: FormEvent<HTMLFormElement>) {
@@ -78,10 +75,20 @@ export function MemberLoginPanel() {
       })
       const body = await response.json()
       if (!response.ok) {
-        if (String(body.error ?? '').startsWith('MEMBERSHIP_REQUEST_EXISTS:')) throw new Error('A membership request already exists for that Oberlin email.')
-        throw new Error(body.error === 'OBERLIN_EMAIL_REQUIRED' ? 'Use your @oberlin.edu email.' : body.error ?? 'Could not submit membership request.')
+        const messages: Record<string, string> = {
+          OBERLIN_EMAIL_REQUIRED: 'Use your @oberlin.edu email.',
+          DISPLAY_NAME_REQUIRED: 'Enter your full name.',
+          MEMBERSHIP_REQUEST_BLOCKED: 'An officer needs to help with this account. Please contact the club.',
+          MEMBERSHIP_EMAIL_RATE_LIMITED: 'Too many email requests. Please wait 15 minutes before trying again.',
+          MEMBERSHIP_EMAIL_FAILED: 'Your request is saved, but the email could not be sent. Wait a minute and try again. You do not need to start over.',
+        }
+        throw new Error(messages[body.error] ?? 'Could not complete your request right now. Please try again in a minute.')
       }
-      setNotice('Verification email sent. Verify your Oberlin email, then an OEC Admin will review your request.')
+      if (body.status === 'ACTIVE') setNotice('Your account is already set up. Sign in, or use Forgot password if you need a new password.')
+      else if (body.status === 'PENDING_APPROVAL') setNotice('Your email is verified. You are waiting for an officer to approve your account. You do not need to submit another request.')
+      else if (body.retryAfter) setNotice('We already sent an email in the last minute. Check your inbox and spam folder, and use the newest message. Wait a minute before requesting another.')
+      else if (body.status === 'APPROVED') setNotice('Setup email sent. Open the newest message to choose a password and finish setting up your account.')
+      else setNotice('Check your inbox and spam folder for the newest verification email. If you were already invited, your approval is kept. Open the link to continue setup.')
       element.reset()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not submit membership request.') }
     finally { setBusy('') }
@@ -98,6 +105,6 @@ export function MemberLoginPanel() {
     {(error||notice)&&<p className="member-auth-message" role={error?'alert':'status'}>{error||notice}</p>}
     <button type="submit" disabled={Boolean(busy)}>{busy?'Please wait...':mode==='password'?'Sign in':mode==='magic'?'Send sign-in link':mode==='reset'?'Send reset link':'Request account'}</button>
     </form>
-    <div className="auth-options">{mode==='password'?<><button type="button" onClick={()=>setMode('magic')}>Sign in with an email link</button><button type="button" onClick={()=>setMode('reset')}>Forgot password?</button></>:<button type="button" onClick={()=>setMode('password')}>Back to sign in</button>}</div>
+    <div className="auth-options">{mode==='password'?<><button type="button" onClick={()=>{setMode('magic');setError('');setNotice('')}}>Sign in with an email link</button><button type="button" onClick={()=>{setMode('reset');setError('');setNotice('')}}>Forgot password?</button></>:<button type="button" onClick={()=>{setMode('password');setError('');setNotice('')}}>Back to sign in</button>}{mode!=='request'&&<button type="button" onClick={()=>{setMode('request');setError('');setNotice('')}}>Request a new setup email</button>}</div>
   </section></div>
 }

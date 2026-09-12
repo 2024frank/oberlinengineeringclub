@@ -2,10 +2,11 @@ import 'server-only'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isOberlinEmail, normalizeMembershipDecision, type MembershipStatus } from './memberLifecycle'
 import { assertMemberRecoveryEligible } from './passwordRecovery'
-import { buildServerAuthLink, type OecEmailOtpType } from './serverAuthLinks'
+import { buildServerAuthLink, normalizeEmailOtpType, type OecEmailOtpType } from './serverAuthLinks'
 import { memberEmailOrigin } from './memberEmailOrigin'
 import { parseMemberEmails } from '@/lib/members/invitations'
 import { sendTransactionalEmail } from '@/lib/email/client'
+import { consumeSubmissionRateLimit, hashNetworkAddress } from '@/lib/submissions/rateLimit'
 import { memberMagicLinkEmail,memberPasswordResetEmail,membershipApprovedEmail,membershipRejectedEmail,membershipVerificationEmail,membershipInvitationEmail } from '@/lib/email/templates'
 
 export type MembershipRequestSummary = {
@@ -22,32 +23,44 @@ export type MembershipRequestSummary = {
   lastEmailError: string | null
 }
 
-async function generateMemberLink(email: string, origin: string, next: string, type: OecEmailOtpType) {
+async function generateMemberLink(email: string, origin: string, next: string, type: Exclude<OecEmailOtpType, 'signup'>) {
   const supabase = createSupabaseAdminClient()
   const { data, error } = await supabase.auth.admin.generateLink({ type, email })
   const tokenHash = data?.properties?.hashed_token
   if (error || !tokenHash) throw new Error(`MEMBER_AUTH_LINK_FAILED:${error?.message ?? 'unknown'}`)
-  return buildServerAuthLink({ origin: memberEmailOrigin(origin), tokenHash, type, next })
-}
-
-async function generateVerificationLink(email: string, origin: string, next: string) {
-  return generateMemberLink(email, origin, next, 'magiclink')
+  // Supabase converts a magic link into a signup link for a new auth identity.
+  const verificationType = normalizeEmailOtpType(data.properties.verification_type ?? type)
+  return buildServerAuthLink({ origin: memberEmailOrigin(origin), tokenHash, type: verificationType, next })
 }
 
 export async function submitMembershipRequest(input: { email: string; displayName: string }, origin: string) {
-  const email = input.email.trim().toLowerCase()
-  const displayName = input.displayName.trim()
+  const email = typeof input?.email === 'string' ? input.email.trim().toLowerCase() : ''
+  const displayName = typeof input?.displayName === 'string' ? input.displayName.trim() : ''
   if (!isOberlinEmail(email)) throw new Error('OBERLIN_EMAIL_REQUIRED')
   if (displayName.length < 2) throw new Error('DISPLAY_NAME_REQUIRED')
   const supabase = createSupabaseAdminClient()
-  const { data: existing } = await supabase.from('membership_requests').select('id,status').ilike('email', email).maybeSingle()
-  if (existing) throw new Error(`MEMBERSHIP_REQUEST_EXISTS:${existing.status}`)
-  const { data, error } = await supabase.from('membership_requests').insert({ email, display_name: displayName, status: 'REQUESTED' }).select('id').single()
-  if (error || !data) throw new Error(`MEMBERSHIP_REQUEST_CREATE_FAILED:${error?.message ?? 'unknown'}`)
-  const nextPath = `/member-verify?request=${encodeURIComponent(data.id)}`
-  const verificationUrl = await generateVerificationLink(email, origin, nextPath)
-  await sendTransactionalEmail({to:email,message:membershipVerificationEmail({displayName,verificationUrl})})
-  return { requestId: data.id, status: 'REQUESTED' as const }
+  const { data: existing, error: loadError } = await supabase.from('membership_requests').select('id,status,last_email_sent_at').ilike('email', email).maybeSingle()
+  if (loadError) throw new Error('MEMBERSHIP_REQUEST_LOAD_FAILED')
+  if (existing && ['REJECTED', 'SUSPENDED'].includes(existing.status)) throw new Error('MEMBERSHIP_REQUEST_BLOCKED')
+  if (existing && ['PENDING_APPROVAL', 'ACTIVE'].includes(existing.status)) {
+    return { status: existing.status as MembershipStatus, emailSent: false }
+  }
+  // A retry must not invalidate the link someone has just opened in their inbox.
+  if (existing?.last_email_sent_at && Date.now() - Date.parse(existing.last_email_sent_at) < 60_000) {
+    return { status: existing.status as MembershipStatus, emailSent: false, retryAfter: 60 }
+  }
+  // Students at the meeting share campus Wi-Fi, so scope this limit to the address.
+  if (!await consumeSubmissionRateLimit(hashNetworkAddress(`member-email:${email}`), 8)) throw new Error('MEMBERSHIP_EMAIL_RATE_LIMITED')
+  let row = existing
+  if (!row) {
+    const { data, error } = await supabase.from('membership_requests').insert({ email, display_name: displayName, status: 'REQUESTED' }).select('id,status,last_email_sent_at').single()
+    if (error || !data) throw new Error('MEMBERSHIP_REQUEST_CREATE_FAILED')
+    row = data
+  }
+  // Keep the original request and approval. Delivery can be retried independently.
+  const result = await sendMembershipSetupEmail(row.id, origin)
+  if (!result.emailSent) throw new Error('MEMBERSHIP_EMAIL_FAILED')
+  return { status: row.status as MembershipStatus, emailSent: true }
 }
 
 export async function startMembershipFromSubmission(input: { email: string; displayName: string }, origin: string, reviewerId: string) {

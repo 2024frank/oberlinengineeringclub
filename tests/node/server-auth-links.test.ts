@@ -19,6 +19,7 @@ test('builds a server-verifiable auth link without exposing an access-token frag
 
 test('allows only email verification types used by OEC flows', () => {
   assert.equal(normalizeEmailOtpType('invite'), 'invite')
+  assert.equal(normalizeEmailOtpType('signup'), 'signup')
   assert.equal(normalizeEmailOtpType('magiclink'), 'magiclink')
   assert.equal(normalizeEmailOtpType('recovery'), 'recovery')
   assert.throws(() => normalizeEmailOtpType('email_change'), /AUTH_LINK_TYPE_INVALID/)

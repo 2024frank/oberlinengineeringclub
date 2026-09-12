@@ -32,6 +32,12 @@ it('records a successful resend and generates a public-host setup link', async (
   expect(mocks.send.mock.calls[0][0].message.text).not.toContain('https://admin.')
   expect(save.update).toHaveBeenCalledWith(expect.objectContaining({ last_email_error: null, last_email_sent_at: expect.any(String) }))
 })
+it('uses the signup token type returned for a first-time auth identity', async () => {
+  setup('REQUESTED')
+  mocks.link.mockResolvedValue({ data: { properties: { hashed_token: 'test-only-token', verification_type: 'signup' } } })
+  expect(await sendMembershipSetupEmail('a', 'https://oberlin32engineeringsociety.com')).toMatchObject({ emailSent: true })
+  expect(mocks.send.mock.calls[0][0].message.text).toContain('type=signup')
+})
 it('never sends setup emails for suspended members', async () => {
   setup('SUSPENDED')
   await expect(sendMembershipSetupEmail('a', 'https://oberlin32engineeringsociety.com')).rejects.toThrow('MEMBERSHIP_REQUEST_BLOCKED')

@@ -63,3 +63,12 @@
   .portal-shell .member-review-actions button { flex: 1; }
   .portal-shell .member-invite-panel .system-actions { align-items: stretch; flex-direction: column; }
 }
+.portal-shell .project-lead-approval { min-width: 0; width: 100%; display: grid; gap: 12px; margin-top: 12px; }
+.portal-shell .project-lead-approval p { margin: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.6; }
+.portal-shell .project-lead-approval label { display: grid; min-width: 0; gap: 6px; font-size: 14px; font-weight: 600; }
+.portal-shell .project-lead-approval select { min-width: 0; width: 100%; max-width: 100%; min-height: 44px; padding: 10px; font: inherit; background: white; border: 1px solid var(--portal-line); border-radius: 5px; }
+.portal-shell .project-lead-approval .system-actions { justify-content: flex-start; }
+.portal-shell .project-lead-approval button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 14px; max-width: 100%; width: fit-content; font-size: 14px; font-weight: 600; border: 1px solid var(--portal-line); border-radius: 5px; cursor: pointer; }
+.portal-shell .project-lead-approval button.button--cardinal { background: var(--oec-cardinal); color: white; }
+.portal-shell .project-lead-approval button:disabled { opacity: .55; cursor: not-allowed; }
+.portal-shell .application-list a { overflow-wrap: anywhere; }

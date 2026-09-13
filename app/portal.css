@@ -72,3 +72,37 @@
 .portal-shell .project-lead-approval button.button--cardinal { background: var(--oec-cardinal); color: white; }
 .portal-shell .project-lead-approval button:disabled { opacity: .55; cursor: not-allowed; }
 .portal-shell .application-list a { overflow-wrap: anywhere; }
+
+.portal-shell :is(.team-list-row,.team-workspace-grid,.team-invitation,.team-form,.team-request,.team-project) { min-width: 0; overflow-wrap: anywhere; }
+.portal-shell .team-list-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 32px; padding: 28px 0; border-bottom: 1px solid var(--portal-line); }
+.portal-shell .team-list-row h2 { font-size: 22px; margin: 12px 0; }
+.portal-shell .team-list-row h3 { font-size: 18px; }
+.portal-shell .team-count { display: flex; align-items: center; gap: 8px; color: var(--portal-muted); font-size: 14px; }
+.portal-shell .team-people { list-style: none; padding: 0; margin: 16px 0; display: flex; flex-wrap: wrap; gap: 16px 24px; }
+.portal-shell .team-people li { display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 100%; }
+.portal-shell .team-people small { display: block; color: var(--portal-muted); font-size: 12px; }
+.portal-shell .team-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; background: #e9eeeb; color: #335440; font-size: 15px; font-weight: 600; }
+.portal-shell .team-project-names { font-size: 14px; color: var(--portal-muted); }
+.portal-shell .team-workspace-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 40px; }
+.portal-shell .team-workspace-grid > div { min-width: 0; }
+.portal-shell .team-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; }
+.portal-shell .team-actions > div { min-width: 0; }
+.portal-shell :is(.team-actions,.team-form,.team-invite-control) button { min-height: 44px; max-width: 100%; white-space: normal; }
+.portal-shell .team-form { display: grid; gap: 16px; margin: 20px 0; max-width: 600px; }
+.portal-shell :is(.team-form,.team-invite-control) label { display: grid; gap: 7px; font-size: 14px; font-weight: 600; min-width: 0; }
+.portal-shell :is(.team-form,.team-invite-control) :is(input:not([type=checkbox]),textarea,select) { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; padding: 12px; min-height: 44px; border: 1px solid var(--portal-line); border-radius: 5px; background: white; color: var(--portal-ink); font: inherit; }
+.portal-shell .team-form .portal-check { display: flex; align-items: center; }
+.portal-shell .team-form button { justify-self: start; }
+.portal-shell .team-invite-control { margin-top: 16px; }
+.portal-shell .team-invite-control form { display: grid; gap: 12px; }
+.portal-shell .team-feedback { font-size: 14px; color: #235136; line-height: 1.5; }
+.portal-shell :is(.team-invitation,.team-request,.team-project) { border-bottom: 1px solid var(--portal-line); padding: 18px 0; }
+.portal-shell :is(.team-invitation,.team-request,.team-project) h3 { font-size: 17px; line-height: 1.4; }
+.portal-shell .team-invitation { display: grid; gap: 12px; }
+.portal-shell .team-member-actions { padding: 12px 0; display: grid; gap: 8px; }
+.portal-shell .team-proposal-link { margin-top: 24px; }
+.portal-shell .team-membership-links { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--portal-line); font-size: 13px; }
+@media (max-width: 800px) {
+  .portal-shell :is(.team-workspace-grid,.team-list-row) { grid-template-columns: minmax(0,1fr); gap: 16px; }
+  .portal-shell .team-workspace-grid { gap: 0; }
+}

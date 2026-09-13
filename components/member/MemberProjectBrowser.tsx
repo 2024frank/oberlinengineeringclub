@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, ChevronDown, Search } from 'lucide-react'
+import type { ProjectRoster } from '@/lib/teams/types'
+import { TeamRoster } from './teams/TeamBrowser'
 
 export type MemberBrowseProject = { id: string; title: string; summary: string; disciplines: string[]; skills: string[]; recruiting: boolean; problem?: string; goal?: string }
 
-export function MemberProjectBrowser({ projects, applications, teamIds }: { projects: MemberBrowseProject[]; applications: { projectId: string; status: string }[]; teamIds: string[] }) {
+export function MemberProjectBrowser({ projects, applications, teamIds, rosters = [] }: { projects: MemberBrowseProject[]; applications: { projectId: string; status: string }[]; teamIds: string[]; rosters?: ProjectRoster[] }) {
   const [query, setQuery] = useState(''), [recruiting, setRecruiting] = useState(false)
   const visible = projects.filter(project => (!recruiting || project.recruiting) && [project.title, project.summary, ...project.disciplines, ...project.skills].join(' ').toLowerCase().includes(query.trim().toLowerCase()))
   return <>
@@ -18,6 +20,7 @@ export function MemberProjectBrowser({ projects, applications, teamIds }: { proj
       return <article key={project.id}>
         <div className="portal-project-heading"><div><span className={`portal-status ${project.recruiting ? 'portal-status--success' : ''}`}>{project.recruiting ? 'Recruiting members' : 'Not recruiting'}</span><h2>{project.title}</h2></div></div>
         <p>{project.summary}</p>
+        <details className="portal-project-details"><summary>Who has joined ({rosters.find(roster => roster.projectId === project.id)?.members.length ?? 0}) <ChevronDown size={16}/></summary><TeamRoster people={rosters.find(roster => roster.projectId === project.id)?.members ?? []}/></details>
         {project.disciplines.length > 0 && <div className="tag-row">{project.disciplines.map(discipline => <span key={discipline}>{discipline}</span>)}</div>}
         {(project.problem || project.goal || project.skills.length > 0) && <details className="portal-project-details"><summary>Project details <ChevronDown size={16}/></summary>{project.problem && <><h3>The problem</h3><p>{project.problem}</p></>}{project.goal && <><h3>The goal</h3><p>{project.goal}</p></>}{project.skills.length > 0 && <p><strong>Skills:</strong> {project.skills.join(', ')}</p>}</details>}
         <footer>{joined ? <Link className="button button--primary" href={`/member/teams/${project.id}`} aria-label={`Open ${project.title} workspace`}>Open workspace <ArrowRight size={17}/></Link> : application ? <><span className="portal-status">{application.status === 'PENDING' ? 'Application sent' : application.status === 'ACCEPTED' ? 'Application accepted' : application.status === 'REJECTED' ? 'Application declined' : 'Application withdrawn'}</span><Link className="portal-text-link" href="/member/applications" aria-label={`View application for ${project.title}`}>View application <ArrowRight size={17}/></Link></> : project.recruiting ? <Link className="button button--primary" href={`/member/applications?project=${encodeURIComponent(project.id)}`} aria-label={`Apply to ${project.title}`}>Apply to join <ArrowRight size={17}/></Link> : <span className="portal-muted">Applications are closed for this project.</span>}</footer>

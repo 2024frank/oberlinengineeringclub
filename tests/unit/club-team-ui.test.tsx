@@ -3,6 +3,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 vi.mock('next/navigation',()=>({useRouter:()=>({refresh:vi.fn(),push:vi.fn()})}))
 import { TeamCreateForm, TeamInviteControl, ClubInvitations } from '@/components/member/teams/TeamForms'
 import { TeamWorkspace } from '@/components/member/teams/TeamWorkspace'
+import { TeamBrowser } from '@/components/member/teams/TeamBrowser'
 afterEach(()=>vi.unstubAllGlobals())
 it('preserves a team name after creation fails',async()=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:false,json:async()=>({error:'Please try again.'})}))
@@ -39,4 +40,9 @@ it('does not say the user joined when a stale invitation was already declined',a
 it('does not offer a workspace link after project access was removed',()=>{
   render(<TeamWorkspace team={{id:'team',name:'Water sensors',description:'',recruiting:true,myRole:'MEMBER',myRequest:null,roster:[],projects:[{id:'project',title:'Sensors',status:'APPROVED',published:true,canReview:false}],proposals:[],requests:[]}}/>)
   expect(screen.queryByRole('link',{name:'Open project workspace'})).not.toBeInTheDocument()
+})
+it('uses singular copy for a newly created team with one member',()=>{
+  render(<TeamBrowser teams={[{id:'team',name:'Water sensors',description:'',recruiting:true,myRole:'LEAD',myRequest:null,roster:[{userId:'lead',displayName:'Alex',role:'LEAD'}],projects:[],proposals:[],requests:[]}]}/>)
+  expect(screen.queryByText(/1 members/)).not.toBeInTheDocument()
+  expect(screen.getByText(/1 member/)).toBeInTheDocument()
 })

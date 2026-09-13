@@ -23,7 +23,7 @@ export function TeamProjectReview({ teamId, project, admin = false }: { teamId: 
 export function TeamProjectRequests({ teams, projectId, admin = false }: { teams: ClubTeam[]; projectId?: string; admin?: boolean }) {
   const requests = teams.flatMap(team => team.projects.filter(project => project.status === 'PENDING' && project.canReview && (!projectId || project.id === projectId)).map(project => ({ team, project })))
   if (!requests.length) return null
-  return <section className="portal-section"><h2>Team project requests</h2>{requests.map(({ team, project }) => <article className="team-invitation" key={`${team.id}-${project.id}`}><div><h3>{team.name}</h3><p>{project.title} · {team.roster.length} members</p><TeamRoster people={team.roster}/></div><TeamProjectReview teamId={team.id} project={project} admin={admin}/></article>)}</section>
+  return <section className="portal-section"><h2>Team project requests</h2>{requests.map(({ team, project }) => <article className="team-invitation" key={`${team.id}-${project.id}`}><div><h3>{team.name}</h3><p>{project.title} · {team.roster.length} member{team.roster.length === 1 ? '' : 's'}</p><TeamRoster people={team.roster}/></div><TeamProjectReview teamId={team.id} project={project} admin={admin}/></article>)}</section>
 }
 function JoinTeam({ team }: { team: ClubTeam }) {
   const action = useTeamAction()

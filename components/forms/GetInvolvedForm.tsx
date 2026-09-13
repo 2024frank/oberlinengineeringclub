@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Check, CheckCheck, ChevronDown, CircuitBoard, Cog, Cpu, FlaskConical, Bot, Waves, Copy } from 'lucide-react'
 import { submissionSchema } from '@/lib/submissions/schema'
 
@@ -16,6 +17,12 @@ const interests = [
 ]
 const initialFields = { fullName: '', email: '', major: '', classYear: '', projectIdea: '', organization: '', message: '', honeypot: '', interests: '' }
 type Fields = typeof initialFields & { project: string }
+
+function LeadershipRedirect() {
+  const router = useRouter()
+  useEffect(() => { router.push('/leadership') }, [router])
+  return null
+}
 
 export function GetInvolvedForm({ defaultType = 'join_club', defaultProject = '', defaultFocus = '' }: { defaultType?: string; defaultProject?: string; defaultFocus?: string }) {
   const [started] = useState(() => Date.now())
@@ -57,6 +64,7 @@ export function GetInvolvedForm({ defaultType = 'join_club', defaultProject = ''
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (type === 'leadership_interest') return
     if (step < 2) { advance(); return }
     const parsed = submissionSchema.safeParse(payload())
     if (!parsed.success) { setFieldErrors(parsed.error.flatten().fieldErrors); setStep(1); return }
@@ -82,6 +90,7 @@ export function GetInvolvedForm({ defaultType = 'join_club', defaultProject = ''
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('oec-join-progress', { detail: { phase, interest: selected.at(-1) ?? 0 } }))
   }, [phase, selected])
+  if (type === 'leadership_interest') return <LeadershipRedirect/>
   return <section className="join-experience">
     <div className="join-flow" ref={flow}>
       {status === 'success' ? <div className="join-success" role="status">

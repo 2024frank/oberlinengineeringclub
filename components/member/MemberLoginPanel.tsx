@@ -3,8 +3,9 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { officerLoginNext } from '@/lib/leadership/input'
 
-export function MemberLoginPanel({ authError, status }: { authError?: string; status?: string } = {}) {
+export function MemberLoginPanel({ authError, status, next }: { authError?: string; status?: string; next?: string } = {}) {
   const router = useRouter()
   const [mode,setMode] = useState<'password'|'magic'|'reset'|'request'>('password')
   const [error, setError] = useState(authError === 'auth_link' ? 'This email link has expired or has already been used. Request a new setup email below and open the newest message.' : '')
@@ -24,7 +25,7 @@ export function MemberLoginPanel({ authError, status }: { authError?: string; st
         password: String(form.get('password') ?? ''),
       })
       if (authError) throw new Error('Sign-in failed. Check your Oberlin email and password.')
-      router.replace('/member'); router.refresh()
+      router.replace(officerLoginNext(next)); router.refresh()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Sign-in failed.')
     } finally { setBusy('') }
@@ -37,7 +38,7 @@ export function MemberLoginPanel({ authError, status }: { authError?: string; st
     try {
       const response = await fetch('/api/auth/member/magic-link', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: String(form.get('email') ?? '') }),
+        body: JSON.stringify({ email: String(form.get('email') ?? ''), next: officerLoginNext(next) }),
       })
       const body = await response.json()
       if (!response.ok) throw new Error(body.error === 'ACTIVE_MEMBER_REQUIRED' ? 'That email does not have an active approved OEC member account.' : body.error ?? 'Could not send sign-in link.')

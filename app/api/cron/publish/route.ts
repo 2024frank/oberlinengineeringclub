@@ -1,12 +1,15 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
+import { sendQueuedOfficerEmails } from '@/lib/leadership/emailServer'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { validatePageForPublish } from '@/lib/page-builder/pageService'
 import { publishPageSnapshot } from '@/lib/publishing/pages'
 import { contentEntityTypes } from '@/lib/cms/contentDrafts'
 import { publishContentSnapshot } from '@/lib/publishing/content'
 
+export const maxDuration = 60
 export async function GET(request: Request) {
   if (!process.env.CRON_SECRET || request.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({error:'UNAUTHORIZED'},{status:401})
+  after(async()=>{try{await sendQueuedOfficerEmails()}catch{console.error('OFFICER_EMAIL_WORKER_FAILED')}})
   const admin=createSupabaseAdminClient(); const {data:rows,error}=await admin.rpc('claim_due_publications',{p_limit:20})
   if(error) return NextResponse.json({error:error.message},{status:500})
   const results=[] as Array<{id:string;ok:boolean;error?:string}>

@@ -7,7 +7,8 @@ import { normalizeProjectProposalInput } from '@/lib/projects/proposals'
 
 const steps = ['Your idea', 'Team & details', 'Review']
 const initial = { title: '', summary: '', problem: '', goal: '', disciplines: '', recruitingNeeds: '', links: '' }
-export function ProjectProposalForm() {
+export function ProjectProposalForm({ teams = [], initialTeamId = '' }: { teams?: { id: string; name: string }[]; initialTeamId?: string }) {
+  const [teamId, setTeamId] = useState(initialTeamId)
   const [step, setStep] = useState(0), [values, setValues] = useState(initial)
   const ready = useFormReady()
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [sent, setSent] = useState(false)
@@ -28,7 +29,7 @@ export function ProjectProposalForm() {
     setBusy(true)
     try {
       const payload = normalizeProjectProposalInput(input)
-      const response = await fetch('/api/member/project-proposals', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+      const response = await fetch('/api/member/project-proposals', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...payload, ...(teamId ? { teamId } : {}) }) })
       const body = await response.json()
       if (!response.ok) throw new Error(body.error === 'PROJECT_LINK_INVALID' ? 'Check your supporting links and try again.' : 'Your idea could not be sent. Your draft is still here. Please try again.')
       setSent(true)
@@ -40,8 +41,8 @@ export function ProjectProposalForm() {
     <ol className="portal-stepper" aria-label="Proposal progress">{steps.map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined}><span>{index < step ? <Check size={15}/> : index + 1}</span>{label}</li>)}</ol>
     <h2 ref={heading} tabIndex={-1}>{step === 0 ? 'What would you like to build?' : step === 1 ? 'Who and what will you need?' : 'Review your idea'}</h2>
     {step === 0 && <><label>Project title<input {...field('title')} minLength={3} maxLength={160} required/></label><label>What problem are you solving?<textarea {...field('problem')} rows={3} minLength={10} maxLength={4000} required/></label><label>What should the project accomplish?<textarea {...field('goal')} rows={3} minLength={10} maxLength={4000} required/></label></>}
-    {step === 1 && <><p className="portal-muted">These details are optional.</p><label>Short summary<textarea {...field('summary')} rows={2} maxLength={1200}/></label><label>Engineering disciplines <small>Separated by commas</small><input {...field('disciplines')} placeholder="Electrical, Mechanical, Computer Science"/></label><label>Who or what skills do you want to recruit?<textarea {...field('recruitingNeeds')} rows={3} maxLength={1200}/></label><label>Supporting links <small>One URL per line</small><textarea {...field('links')} rows={2}/></label></>}
-    {step === 2 && <dl className="portal-review">{[['Project', values.title], ['Problem', values.problem], ['Goal', values.goal], ['Summary', values.summary], ['Disciplines', values.disciplines], ['Team needs', values.recruitingNeeds], ['Links', values.links]].filter(([, value]) => value).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
+    {step === 1 && <>{teams.length > 0 && <label>Propose for<select value={teamId} onChange={event => setTeamId(event.target.value)}><option value="">My own idea</option>{teams.map(team => <option value={team.id} key={team.id}>{team.name}</option>)}</select></label>}<p className="portal-muted">These details are optional.</p><label>Short summary<textarea {...field('summary')} rows={2} maxLength={1200}/></label><label>Engineering disciplines <small>Separated by commas</small><input {...field('disciplines')} placeholder="Electrical, Mechanical, Computer Science"/></label><label>Who or what skills do you want to recruit?<textarea {...field('recruitingNeeds')} rows={3} maxLength={1200}/></label><label>Supporting links <small>One URL per line</small><textarea {...field('links')} rows={2}/></label></>}
+    {step === 2 && <dl className="portal-review">{[['Team', teams.find(team => team.id === teamId)?.name ?? 'Individual proposal'], ['Project', values.title], ['Problem', values.problem], ['Goal', values.goal], ['Summary', values.summary], ['Disciplines', values.disciplines], ['Team needs', values.recruitingNeeds], ['Links', values.links]].filter(([, value]) => value).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
     {error && <p className="portal-form-error" role="alert">{error}</p>}
     <div className="portal-form-footer">{step > 0 ? <button className="button button--ghost" type="button" disabled={busy} onClick={() => { setError(''); setStep(step - 1) }}><ArrowLeft size={17}/>Back</button> : <Link className="portal-text-link" href="/member/proposals">Cancel</Link>}<button className="button button--primary" disabled={busy}>{step === 2 && <Send size={17}/>} {busy ? 'Submitting...' : step === 0 ? 'Continue' : step === 1 ? 'Review idea' : 'Submit idea'}{step < 2 && <ArrowRight size={17}/>}</button></div>
   </fieldset></form>

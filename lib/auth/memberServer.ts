@@ -182,13 +182,14 @@ export async function activateServerMember(currentUser: { id: string; email: str
   return data as { user_id: string; status: 'ACTIVE' }
 }
 
-export async function sendActiveMemberMagicLink(emailInput: string, origin: string) {
+export async function sendActiveMemberMagicLink(emailInput: string, origin: string, next?: unknown) {
   const email = emailInput.trim().toLowerCase()
   if (!isOberlinEmail(email)) throw new Error('ACTIVE_MEMBER_REQUIRED')
   const supabase = createSupabaseAdminClient()
   const { data: profile, error } = await supabase.from('member_profiles').select('display_name,status').ilike('oberlin_email', email).maybeSingle()
   if (error || !profile || profile.status !== 'ACTIVE') throw new Error('ACTIVE_MEMBER_REQUIRED')
-  const magicUrl = await generateMemberLink(email, origin, '/member', 'magiclink')
+  const { officerLoginNext } = await import('@/lib/leadership/input')
+  const magicUrl = await generateMemberLink(email, origin, officerLoginNext(next), 'magiclink')
   await sendTransactionalEmail({to:email,message:memberMagicLinkEmail({displayName:profile.display_name,magicUrl})})
 }
 

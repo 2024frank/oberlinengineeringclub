@@ -3,8 +3,8 @@ import { sendActiveMemberMagicLink } from '@/lib/auth/memberServer'
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json()
-    await sendActiveMemberMagicLink(String(email ?? ''), new URL(request.url).origin)
+    const { email, next } = await request.json()
+    await sendActiveMemberMagicLink(String(email ?? ''), new URL(request.url).origin, next)
     return NextResponse.json({ ok: true })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'MAGIC_LINK_FAILED'

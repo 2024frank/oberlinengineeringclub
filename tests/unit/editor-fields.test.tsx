@@ -65,3 +65,11 @@ it('keeps event times in the officer local timezone while storing an ISO instant
   expect(screen.getByLabelText('Start time')).toHaveValue('2026-09-10T16:00')
   expect(screen.getByRole('status')).toHaveTextContent(new Date(2026, 8, 10, 16, 0).toISOString())
 })
+it('keeps commas and spaces while typing a comma-separated list', async () => {
+  const user = userEvent.setup()
+  render(<ContentEditor type="projects"/>)
+  const skills = screen.getByLabelText(/^Skills/)
+  await user.type(skills, '3D printing, CAD, ')
+  expect(skills).toHaveValue('3D printing, CAD, ')
+  expect(JSON.parse(screen.getByRole('status').textContent!)).toMatchObject({ skills: ['3D printing', 'CAD'] })
+})

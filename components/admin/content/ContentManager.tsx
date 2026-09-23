@@ -13,13 +13,17 @@ import { eventPublishSchema } from '@/lib/validation/events'
 import { leaderPublishSchema } from '@/lib/validation/leaders'
 
 type Draft = { id: string; payload: Record<string, unknown>; title: string }
-type Props = { entityType: ContentEntityType; title: string; rows: AdminContentRow[]; canPublish: boolean; notificationAudienceCount?: number; initialCreate?: boolean; mediaAssets?: MediaAsset[]; onSaveDraft?: (id: string, payload: Record<string, unknown>) => Promise<void>; onPublishDraft?: (id: string) => Promise<void> }
+type Props = { entityType: ContentEntityType; title: string; rows: AdminContentRow[]; canPublish: boolean; notificationAudienceCount?: number; initialCreate?: boolean; initialEditId?: string; projectChoices?: { id: string; title: string }[]; mediaAssets?: MediaAsset[]; onSaveDraft?: (id: string, payload: Record<string, unknown>) => Promise<void>; onPublishDraft?: (id: string) => Promise<void> }
 
-export function ContentManager({ entityType, title, rows: initial, canPublish, notificationAudienceCount, initialCreate = false, mediaAssets, onSaveDraft, onPublishDraft }: Props) {
+export function ContentManager({ entityType, title, rows: initial, canPublish, notificationAudienceCount, initialCreate = false, initialEditId, projectChoices, mediaAssets, onSaveDraft, onPublishDraft }: Props) {
   const singular = ({ news_posts: 'News post', resources: 'Resource', opportunities: 'Opportunity', leaders: 'Leader', partner_schools: 'Partner school' } as Partial<Record<ContentEntityType, string>>)[entityType] ?? title.replace(/s$/, '')
   const newDraft = (): Draft => ({ id: crypto.randomUUID(), title: '', payload: structuredClone(defaultsByType[entityType]) })
   const [rows, setRows] = useState(initial), [query, setQuery] = useState(''), [stateFilter, setStateFilter] = useState('')
-  const [current, setCurrent] = useState<Draft | null>(() => initialCreate ? newDraft() : null)
+  const [current, setCurrent] = useState<Draft | null>(() => {
+    if (initialCreate) return newDraft()
+    const row = initialEditId ? initial.find(item => item.id === initialEditId) : undefined
+    return row ? { id: row.id, title: row.title, payload: structuredClone(row.payload) } : null
+  })
   const [busy, setBusy] = useState<'save' | 'publish' | null>(null), [feedback, setFeedback] = useState(''), [error, setError] = useState(''), [confirmClose, setConfirmClose] = useState(false)
   const [savedPayload, setSavedPayload] = useState(() => JSON.stringify(current?.payload))
   const fields = useRef<HTMLFieldSetElement>(null)
@@ -92,7 +96,7 @@ export function ContentManager({ entityType, title, rows: initial, canPublish, n
     {!visibleRows.length && <div className="portal-empty"><div><h2>{rows.length ? 'No matching records.' : `No ${title.toLowerCase()} yet.`}</h2>{rows.length ? <button className="button button--ghost" onClick={() => { setQuery(''); setStateFilter('') }}>Clear filters</button> : <button className="button button--primary" onClick={() => open(newDraft())}><Plus size={17}/>Create first {singular.toLowerCase()}</button>}</div></div>}
     <EditorDrawer open={Boolean(current)} title={current?.title || `New ${singular.toLowerCase()}`} onClose={close}>{current && <>
       {confirmClose ? <div className="portal-discard" role="alert"><h3>Discard unsaved changes?</h3><p>Your latest edits have not been saved.</p><div><button className="button button--primary" onClick={() => setConfirmClose(false)}>Keep editing</button><button className="button button--ghost" onClick={() => { setConfirmClose(false); setCurrent(null) }}>Discard changes</button></div></div> : <>
-        <fieldset ref={fields} className="portal-editor-fields" disabled={Boolean(busy)}><Form key={current.id} value={current.payload} onChange={change} mediaAssets={mediaAssets} autoSlug={!rows.some(row => row.id === current.id)}/></fieldset>
+        <fieldset ref={fields} className="portal-editor-fields" disabled={Boolean(busy)}><Form key={current.id} value={current.payload} onChange={change} mediaAssets={mediaAssets} projectChoices={projectChoices} autoSlug={!rows.some(row => row.id === current.id)}/></fieldset>
         {entityType === 'leaders' && Boolean(current.payload.openSeat) && <p className="portal-save-feedback">Publishing a new opening queues an email to {notificationAudienceCount ?? 'all'} active members. Edits to an already announced opening do not send another email.</p>}
         {error && <p className="portal-form-error" role="alert">{error}</p>}{feedback && <p className="portal-save-feedback" role="status"><Check size={17}/>{feedback}</p>}
         <footer className="editor-actions"><span className="portal-save-state">{dirty ? 'Unsaved changes' : feedback ? 'Saved' : 'Draft editor'}</span><button type="button" disabled={Boolean(busy)} onClick={close}>Close</button><button type="button" disabled={Boolean(busy)} onClick={() => void save(false)}><Save size={16}/>{busy === 'save' ? 'Saving...' : 'Save draft'}</button>{canPublish && <button className="button--cardinal" type="button" disabled={Boolean(busy)} onClick={() => void save(true)}><Upload size={16}/>{busy === 'publish' ? 'Publishing...' : 'Publish'}</button>}</footer>

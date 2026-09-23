@@ -53,8 +53,10 @@ The member directory is visible only to approved active members and authorized s
 
 - Members can save projects, opportunities, and resources.
 - Members submit project proposals; Admin/Super Admin approval creates the workspace and makes the proposer Project Lead atomically.
-- Approved members can apply to a recruiting project.
+- Approved members can apply to a recruiting project, or ask through the public "Join a project" form.
+- Officers approve join requests as regular team members by default; appointing a lead is a separate, confirmed choice. Officers can decline applications, add members directly, change roles, remove anyone, start a project (kickoff email to the whole team), hide it, or delete it from **Project teams**. See `docs/PROJECT_TEAMS.md`.
 - Project Leads can accept/reject applications and invite other approved members.
+- Team members track milestones, post to a private team feed, share links, and can leave a project.
 - Invitations require acceptance by the invitee; Leads cannot silently add someone to the roster.
 - Project workspaces contain roster, applications, invitations, milestones, and team updates.
 - Team-authored updates are drafts. Admin/Super Admin must review them before they can enter the normal CMS publishing flow.

@@ -5,10 +5,13 @@ import Link from 'next/link'
 import { ArrowRight, ChevronDown, Search } from 'lucide-react'
 import type { ProjectRoster } from '@/lib/teams/types'
 import { TeamRoster } from './teams/TeamBrowser'
+import { MilestoneMeter } from '@/components/projects/MilestoneMeter'
+import type { ProjectTeamStats } from '@/lib/content/teamStatsModel'
+import { formatPortalDate } from '@/lib/format/portalDate'
 
 export type MemberBrowseProject = { id: string; title: string; summary: string; disciplines: string[]; skills: string[]; recruiting: boolean; problem?: string; goal?: string }
 
-export function MemberProjectBrowser({ projects, applications, teamIds, rosters = [] }: { projects: MemberBrowseProject[]; applications: { projectId: string; status: string }[]; teamIds: string[]; rosters?: ProjectRoster[] }) {
+export function MemberProjectBrowser({ projects, applications, teamIds, rosters = [], stats = {} }: { projects: MemberBrowseProject[]; applications: { projectId: string; status: string }[]; teamIds: string[]; rosters?: ProjectRoster[]; stats?: Record<string, ProjectTeamStats> }) {
   const [query, setQuery] = useState(''), [recruiting, setRecruiting] = useState(false)
   const visible = projects.filter(project => (!recruiting || project.recruiting) && [project.title, project.summary, ...project.disciplines, ...project.skills].join(' ').toLowerCase().includes(query.trim().toLowerCase()))
   return <>
@@ -19,8 +22,9 @@ export function MemberProjectBrowser({ projects, applications, teamIds, rosters 
       const application = found?.status === 'PENDING' ? found : undefined
       const joined = teamIds.includes(project.id)
       return <article key={project.id}>
-        <div className="portal-project-heading"><div><span className={`portal-status ${project.recruiting ? 'portal-status--success' : ''}`}>{project.recruiting ? 'Recruiting members' : 'Not recruiting'}</span><h2>{project.title}</h2></div></div>
+        <div className="portal-project-heading"><div><span className={`portal-status ${project.recruiting ? 'portal-status--success' : ''}`}>{project.recruiting ? 'Recruiting members' : 'Not recruiting'}</span>{stats[project.id]?.startedAt && <span className="portal-status">Underway since {formatPortalDate(stats[project.id].startedAt!)}</span>}{joined && <span className="portal-status portal-status--success">You are on this team</span>}<h2>{project.title}</h2></div></div>
         <p>{project.summary}</p>
+        {Boolean(stats[project.id]?.milestonesTotal) && <MilestoneMeter done={stats[project.id].milestonesDone} total={stats[project.id].milestonesTotal}/>}
         <details className="portal-project-details"><summary>Who has joined ({rosters.find(roster => roster.projectId === project.id)?.members.length ?? 0}) <ChevronDown size={16}/></summary><TeamRoster people={rosters.find(roster => roster.projectId === project.id)?.members ?? []}/></details>
         {project.disciplines.length > 0 && <div className="tag-row">{project.disciplines.map(discipline => <span key={discipline}>{discipline}</span>)}</div>}
         {(project.problem || project.goal || project.skills.length > 0) && <details className="portal-project-details"><summary>Project details <ChevronDown size={16}/></summary>{project.problem && <><h3>The problem</h3><p>{project.problem}</p></>}{project.goal && <><h3>The goal</h3><p>{project.goal}</p></>}{project.skills.length > 0 && <p><strong>Skills:</strong> {project.skills.join(', ')}</p>}</details>}

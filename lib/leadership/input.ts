@@ -24,5 +24,8 @@ export function officerLoginNext(value: unknown) {
   if (typeof value !== 'string') return '/member'
   if (value === '/member/leadership') return value
   const match = /^\/member\/leadership\?position=([\da-f-]+)$/i.exec(value)
-  return match && positionId.safeParse(match[1]).success ? value : '/member'
+  if (match) return positionId.safeParse(match[1]).success ? value : '/member'
+  // Project links from the public site: apply to a project or open its workspace.
+  const project = /^\/member\/(?:applications\?project=|teams\/)([\da-f-]{36})$/i.exec(value)
+  return project && positionId.safeParse(project[1]).success ? value : '/member'
 }

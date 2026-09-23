@@ -106,3 +106,5 @@
   .portal-shell :is(.team-workspace-grid,.team-list-row) { grid-template-columns: minmax(0,1fr); gap: 16px; }
   .portal-shell .team-workspace-grid { gap: 0; }
 }
+.portal-project-heading .portal-status{margin:0 6px 6px 0}
+.portal-project-list .milestone-meter{margin:4px 0 16px}

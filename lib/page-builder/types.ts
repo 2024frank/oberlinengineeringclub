@@ -4,6 +4,7 @@ import { textImageSchema, statisticsSchema, featuresGridSchema, richTextSchema, 
 import { projectGridSchema, projectSpotlightSchema, disciplineGridSchema, projectTimelineSchema } from './schemas/engineering'
 import { leadershipGridSchema, eventListSchema, opportunityListSchema, newsGridSchema, sponsorGridSchema } from './schemas/community'
 import { ctaSchema } from './schemas/cta'
+import type { ProjectTeamStats } from '@/lib/content/teamStatsModel'
 
 export const pageSectionSchema = z.discriminatedUnion('type', [heroSchema,textImageSchema,statisticsSchema,featuresGridSchema,richTextSchema,quoteSchema,gallerySchema,projectGridSchema,projectSpotlightSchema,disciplineGridSchema,projectTimelineSchema,leadershipGridSchema,eventListSchema,opportunityListSchema,newsGridSchema,sponsorGridSchema,ctaSchema])
 export type PageSection = z.infer<typeof pageSectionSchema>
@@ -19,6 +20,7 @@ export type PageSnapshot = z.infer<typeof pageSnapshotSchema>
 export type PageRenderContext = {
   pageSlug?: string
   projects?: Array<Record<string, unknown>>
+  teamStats?: Record<string, ProjectTeamStats>
   events?: Array<Record<string, unknown>>
   opportunities?: Array<Record<string, unknown>>
   news?: Array<Record<string, unknown>>

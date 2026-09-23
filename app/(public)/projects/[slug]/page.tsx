@@ -2,26 +2,53 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react'
 import { SaveButton } from '@/components/member/SaveButton'
+import { MilestoneMeter } from '@/components/projects/MilestoneMeter'
 import { getCurrentMember } from '@/lib/auth/memberSession'
 import { getPublishedProject } from '@/lib/content/projects'
+import { getProjectTeamStats } from '@/lib/content/projectTeamStats'
+import { teamPhase, teamPhaseLabels } from '@/lib/content/teamStatsModel'
 import { isSavedItem } from '@/lib/members/saves'
 import { publicMedia } from '@/lib/content/publicMedia'
+import { listMyProjectApplications } from '@/lib/projects/applications'
+import { listMyProjectWorkspaces } from '@/lib/projects/workspace'
+import { stageLabel } from '@/lib/projects/labels'
+import { formatPortalDate } from '@/lib/format/portalDate'
+
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata> {
   const project=await getPublishedProject((await params).slug)
   return {title:project?.title??'Project not found',description:project?.summary}
 }
+
+// Where this visitor stands with the project decides the one action we offer.
+async function viewerState(member: Awaited<ReturnType<typeof getCurrentMember>>, projectId: string) {
+  if (!member) return 'visitor' as const
+  try {
+    const [teams, applications] = await Promise.all([listMyProjectWorkspaces(), listMyProjectApplications(member.userId)])
+    if (teams.some(team => team.projectId === projectId)) return 'on-team' as const
+    if (applications.some(application => application.projectId === projectId && application.status === 'PENDING')) return 'applied' as const
+  } catch { /* fall back to the plain member view */ }
+  return 'member' as const
+}
+
 export default async function ProjectPage({params}:{params:Promise<{slug:string}>}) {
   const {slug}=await params
   const p=await getPublishedProject(slug)
   if(!p)notFound()
   const member=await getCurrentMember()
-  const media = p.cover_media_id ? await publicMedia([p.cover_media_id]) : {}
+  const [media, stats, viewer, saved] = await Promise.all([
+    p.cover_media_id ? publicMedia([p.cover_media_id]) : Promise.resolve({} as Record<string, { url: string; alt: string }>),
+    getProjectTeamStats([p.id]),
+    viewerState(member, p.id),
+    member ? isSavedItem(member.userId,'PROJECT',p.id) : Promise.resolve(false),
+  ])
   const cover = media[p.cover_media_id]
-  const saved=member?await isSavedItem(member.userId,'PROJECT',p.id):false
+  const team = stats[p.id]
+  const phase = teamPhase(team, { status: String(p.status), recruiting: Boolean(p.recruiting) })
+  const applyPath = `/member/applications?project=${p.id}`
   const timeline=(p.timeline??[]) as Array<{label?:string;title?:string;body?:string;description?:string}>
-  return <><section className="project-detail-heading"><div className="shell"><Link className="breadcrumb" href="/projects"><ArrowLeft size={16}/>All projects</Link><span className="project-state">{String(p.status).replaceAll('_',' ')}</span><h1>{p.title}</h1>{(p.problem||p.goal)&&<p>{p.summary}</p>}<div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div></div></section>
+  return <><section className="project-detail-heading"><div className="shell"><Link className="breadcrumb" href="/projects"><ArrowLeft size={16}/>All projects</Link><span className="project-state">{stageLabel(String(p.status))}</span><h1>{p.title}</h1>{(p.problem||p.goal)&&<p>{p.summary}</p>}<div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div></div></section>
   <section className="detail-body"><div className="shell detail-grid"><div className="prose">
     {cover && <figure className="project-cover"><Image src={cover.url} alt={cover.alt || p.title} width={1200} height={800} sizes="(max-width:950px) 100vw, 760px" priority/></figure>}
     {!p.problem&&!p.goal&&p.summary&&<><h2>Project brief</h2><p>{p.summary}</p></>}
@@ -31,5 +58,21 @@ export default async function ProjectPage({params}:{params:Promise<{slug:string}
     {timeline.length>0&&<><h2>Timeline</h2><ol className="project-detail-timeline">{timeline.map((step,index)=><li key={index}><small>{step.label}</small><h3>{step.title}</h3><p>{step.body??step.description}</p></li>)}</ol></>}
     {p.updates?.length>0&&<><h2>Project updates</h2>{p.updates.map((u:{id:string;update_date?:string;title:string;summary:string})=><article className="update" key={u.id}><small>{u.update_date}</small><h3>{u.title}</h3><p>{u.summary}</p></article>)}</>}
   </div>
-  <aside className="detail-aside"><h2>Take part</h2><p>Contact the club about joining this project.</p><Link className="button button--primary" href={'/get-involved?type=join_project&project='+encodeURIComponent(p.title)}>Express interest <ArrowUpRight size={17}/></Link><SaveButton itemType="PROJECT" itemId={p.id} canSave={Boolean(member)} initialSaved={saved}/><dl>{p.difficulty&&<><dt>Difficulty</dt><dd>{p.difficulty}</dd></>}{p.lead_name&&<><dt>Lead</dt><dd>{p.lead_name}</dd></>}{p.next_step&&<><dt>Next step</dt><dd>{p.next_step}</dd></>}</dl>{p.recruiting&&<Link className="text-link" href={member?'/member/applications?project='+p.id:'/member/login'}>{member?'Apply to join project':'Sign in to apply'}</Link>}{p.github_url&&<a className="text-link" href={p.github_url} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16}/></a>}{p.external_url&&<a className="text-link" href={p.external_url} target="_blank" rel="noreferrer">Project website <ArrowUpRight size={16}/></a>}</aside></div></section></>
+  <aside className="detail-aside project-join" aria-labelledby="project-join-heading">
+    <h2 id="project-join-heading">{viewer === 'on-team' ? 'You are on this team' : 'Join this project'}</h2>
+    <div className={`project-team project-team--${phase}`}><span className="project-team__phase">{teamPhaseLabels[phase]}</span>{Boolean(team?.memberCount) && <span className="project-team__count">{team!.memberCount} {team!.memberCount === 1 ? 'member' : 'members'}</span>}</div>
+    {team?.startedAt && <p className="project-join__note">Started {formatPortalDate(team.startedAt)}</p>}
+    {Boolean(team?.milestonesTotal) && <MilestoneMeter done={team!.milestonesDone} total={team!.milestonesTotal}/>}
+    <div className="project-join__actions">
+      {viewer === 'on-team' ? <Link className="button button--primary" href={`/member/teams/${p.id}`}>Open your workspace <ArrowRight size={17}/></Link>
+        : viewer === 'applied' ? <><p className="project-join__note">Your application is waiting for a decision.</p><Link className="button button--secondary" href="/member/applications">View your application</Link></>
+        : p.recruiting ? viewer === 'member'
+          ? <Link className="button button--primary" href={applyPath}>Apply to join <ArrowRight size={17}/></Link>
+          : <><Link className="button button--primary" href={`/member/login?next=${encodeURIComponent(applyPath)}`}>Sign in to apply <ArrowRight size={17}/></Link><p className="project-join__note">New to the club? <Link href="/get-involved">Join OEC first</Link>. No engineering experience needed.</p></>
+        : <><p className="project-join__note">This team is not taking new members right now.</p>{viewer === 'visitor' && <Link className="text-link" href={'/get-involved?type=join_project&project='+encodeURIComponent(p.title)}>Ask the club about this project <ArrowUpRight size={16}/></Link>}</>}
+      <SaveButton itemType="PROJECT" itemId={p.id} canSave={Boolean(member)} initialSaved={saved}/>
+    </div>
+    <dl>{p.difficulty&&<><dt>Difficulty</dt><dd>{p.difficulty}</dd></>}{p.lead_name&&<><dt>Lead</dt><dd>{p.lead_name}</dd></>}{p.next_step&&<><dt>Next step</dt><dd>{p.next_step}</dd></>}</dl>
+    {p.github_url&&<a className="text-link" href={p.github_url} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16}/></a>}{p.external_url&&<a className="text-link" href={p.external_url} target="_blank" rel="noreferrer">Project website <ArrowUpRight size={16}/></a>}
+  </aside></div></section></>
 }

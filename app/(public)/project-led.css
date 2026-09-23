@@ -301,3 +301,37 @@
 @media (prefers-reduced-motion: reduce) {
   .professional-site .project-tile:hover img { transform: none; }
 }
+
+/* Team status on project cards and pages: phase, size and the milestone meter. */
+.professional-site .project-tile__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 12px; color: var(--oec-charcoal); }
+.professional-site .project-tile__footer > svg { color: var(--oec-cardinal); flex: none; }
+.professional-site .project-tile__footer .milestone-meter { flex: 1 0 100%; }
+.professional-site .project-team { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-width: 0; font-size: 13px; line-height: 1.4; }
+.professional-site .project-team__phase { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; color: var(--oec-charcoal); }
+.professional-site .project-team__phase::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--oec-cardinal); }
+.professional-site .project-team--underway .project-team__phase::before { background: var(--oec-success); }
+.professional-site .project-team--recruiting .project-team__phase::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--oec-cardinal); }
+.professional-site .project-team--closed .project-team__phase::before, .professional-site .project-team--complete .project-team__phase::before { background: var(--oec-muted); }
+.professional-site .project-team__count { color: var(--oec-muted); }
+.professional-site .project-grid--list .project-tile__footer { flex-direction: column; align-items: flex-start; justify-content: center; }
+.professional-site .project-grid--list .project-tile__footer > svg { display: none; }
+.professional-site .project-grid--list .project-team { flex-direction: column; gap: 2px; }
+.professional-site .project-grid--list .project-tile__footer .milestone-meter { flex-basis: auto; width: 100%; }
+.professional-site .project-state { text-transform: none; }
+@media (max-width: 760px) {
+  .professional-site .project-grid--list .project-tile__footer { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .professional-site .project-grid--list .project-team { flex-direction: row; }
+}
+.professional-site .project-join h2 { margin-bottom: 12px; }
+.professional-site .project-join .project-team { font-size: 15px; }
+.professional-site .project-join .milestone-meter { margin-top: 14px; }
+.professional-site .project-join .project-join__note { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: var(--oec-muted); }
+.professional-site .project-join__note a { color: var(--oec-cardinal); text-decoration: underline; text-underline-offset: 3px; }
+.professional-site .project-join__actions { display: grid; gap: 10px; margin-top: 22px; }
+.professional-site .project-join__actions .button { margin: 0; }
+.professional-site .project-join .project-join__actions .project-join__note { margin: 0; }
+.professional-site .project-join__actions .text-link { margin: 0; }
+
+/* Four items fill one row instead of leaving the fourth alone. */
+@media (min-width: 1000px) { .professional-site .feature-grid:has(> article:nth-child(4):last-child) { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 801px) and (max-width: 999px) { .professional-site .feature-grid:has(> article:nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

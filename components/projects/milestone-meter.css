@@ -1,0 +1,10 @@
+/* One segment per milestone. Public pages use the club cardinal; the portals use their progress green. */
+.milestone-meter { --meter-done: #a21d2b; --meter-todo: #e2e5e3; --meter-blocked: #a5202a; display: grid; gap: 6px; min-width: 0; }
+.portal-shell .milestone-meter { --meter-done: #356f4c; }
+.milestone-meter__track { display: flex; gap: 3px; height: 7px; max-width: 320px; }
+.milestone-meter__seg { flex: 1 1 0; min-width: 3px; border-radius: 1px; background: var(--meter-todo); }
+.milestone-meter__seg.is-done { background: var(--meter-done); }
+.milestone-meter__seg.is-active { background: linear-gradient(90deg, var(--meter-done) 0 50%, var(--meter-todo) 50% 100%); }
+.milestone-meter__seg.is-blocked { background: repeating-linear-gradient(135deg, var(--meter-blocked) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--meter-blocked); }
+.milestone-meter__label { font-size: 13px; line-height: 1.4; color: #5b6360; }
+@media (forced-colors: active) { .milestone-meter__seg { border: 1px solid CanvasText; } .milestone-meter__seg.is-done { background: CanvasText; } }

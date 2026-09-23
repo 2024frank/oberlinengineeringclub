@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, expect, it } from 'vitest'
 import { AdminDashboard } from '@/components/admin/AdminDashboard'
 import { DashboardCards } from '@/components/admin/DashboardCards'
-const summary = { newSubmissions: 3, drafts: 2, upcomingEvents: 1, activeProjects: 4, closingOpportunities: 2, scheduledPublications: 1, pendingMemberApprovals: 2, activeStaffInvites: 1, pendingProjectProposals: 0, pendingProjectUpdateReviews: 0 }
+const summary = { newSubmissions: 3, drafts: 2, upcomingEvents: 1, activeProjects: 4, closingOpportunities: 2, scheduledPublications: 1, pendingMemberApprovals: 2, activeStaffInvites: 1, pendingProjectProposals: 0, pendingProjectUpdateReviews: 0, pendingProjectApplications: 0 }
 const admin = { userId: 'officer', email: 'officer@example.com', displayName: 'Officer', role: 'SUPER_ADMIN' as const, scopes: [], canPublish: true, active: true }
 afterEach(cleanup)
 it('prioritizes only the queues that need attention', () => {

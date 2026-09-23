@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Archive, Check, Mail, Search } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import Link from 'next/link'
-import { ProjectLeadApproval } from '@/components/admin/projects/ProjectLeadApproval'
+import { ProjectInterestDecision } from '@/components/admin/projects/ProjectInterestDecision'
 export type SubmissionRow = { id: string; type: string; full_name: string; email: string; payload: Record<string, unknown>; status: string; created_at: string }
 function approveErrorMessage(code: string) {
   if (code === 'OBERLIN_EMAIL_REQUIRED') return 'An @oberlin.edu email is required to start member sign-up.'
@@ -24,6 +24,11 @@ export function SubmissionInbox({ initialRows, initialStatus = '', projects = []
       const response = await fetch(membership ? '/api/admin/submissions/approve-membership' : '/api/admin/submissions', { method: membership ? 'POST' : 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(membership ? { id } : { id, status: nextStatus }) })
       if (!response.ok) {
         const body = await response.json().catch(() => ({}))
+        if (membership && body.error === 'MEMBERSHIP_SAVED_INBOX_UPDATE_FAILED') {
+          setRows(previous => previous.map(row => row.id === id ? { ...row, status: 'approved' } : row))
+          const saved = 'Membership approved and the setup email was handled, but this inbox item could not be marked approved. Check Members before retrying.'
+          setError(saved); toast(saved, 'error'); return
+        }
         const message = membership ? approveErrorMessage(body.error ?? '') : 'Could not update this request. Please try again.'
         setError(message); toast(message, 'error'); return
       }
@@ -44,7 +49,7 @@ export function SubmissionInbox({ initialRows, initialStatus = '', projects = []
       {['join_club', 'leadership_interest'].includes(row.type) && !['approved', 'archived'].includes(row.status) && <button className="button--cardinal" disabled={Boolean(busyId)} onClick={() => void update(row.id, 'approved', true)}><Mail size={16}/>{busyId === row.id ? 'Updating...' : 'Approve membership & send email'}</button>}
       {['join_club', 'leadership_interest'].includes(row.type) && row.status === 'approved' && <Link className="button button--ghost" href="/admin/members">View member & email status</Link>}
       {row.type === 'leadership_interest' && row.status !== 'archived' && <span className="member-list-muted">Membership only. Officer roles are managed separately.</span>}
-      {row.type === 'join_project' && row.status !== 'archived' && <ProjectLeadApproval source="submission" requestId={row.id} memberName={row.full_name} memberEmail={row.email} projectTitle={String(row.payload?.project ?? '')} projects={projects} initialApproved={row.status === 'approved'} onApproved={() => setRows(previous => previous.map(item => item.id === row.id ? { ...item, status: 'approved' } : item))}/>}
+      {row.type === 'join_project' && row.status !== 'archived' && <ProjectInterestDecision source="submission" requestId={row.id} memberName={row.full_name} memberEmail={row.email} projectTitle={String(row.payload?.project ?? '')} projects={projects} initialApproved={row.status === 'approved'} onDone={() => setRows(previous => previous.map(item => item.id === row.id ? { ...item, status: 'approved' } : item))}/>}
       {row.status === 'new' && <button disabled={Boolean(busyId)} onClick={() => void update(row.id, 'reviewed')}><Check size={16}/>Mark reviewed</button>}
       {row.status !== 'archived' && <button disabled={Boolean(busyId)} onClick={() => void update(row.id, 'archived')}><Archive size={16}/>Archive</button>}
     </footer></article>)}</div>

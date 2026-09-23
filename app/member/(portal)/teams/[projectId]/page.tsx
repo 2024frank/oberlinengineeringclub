@@ -1,11 +1,27 @@
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import { z } from 'zod'
 import { requireActiveMember } from '@/lib/auth/memberSession'
 import { listClubTeams } from '@/lib/teams/server'
-import { TeamProjectRequests } from '@/components/member/teams/TeamWorkspace'
 import { searchMemberDirectory } from '@/lib/members/directory'
 import { listProjectApplications } from '@/lib/projects/applications'
-import { getProjectWorkspace } from '@/lib/projects/workspace'
-import { ApplicationReviewList,MilestoneManager,RosterManager,TeamInviteForm,TeamUpdateForm } from '@/components/member/ProjectWorkspaceActions'
-export default async function TeamWorkspacePage({params}:{params:Promise<{projectId:string}>}){await requireActiveMember();const{projectId}=await params;const workspace=await getProjectWorkspace(projectId);const isLead=workspace.myRole==='LEAD';const clubTeams=isLead?await listClubTeams():[];const[applications,directory]=isLead?await Promise.all([listProjectApplications(projectId),searchMemberDirectory('')]):[[],[]];return <main className="admin-panel project-workspace"><div className="admin-page-heading"><div><p className="eyebrow">{isLead?'Project Lead workspace':'Project team workspace'}</p><h1>{workspace.project.title}</h1><p>{workspace.project.summary||'Private team coordination space.'}</p></div>{workspace.project.publicationState==='published'&&<Link href={`/projects/${workspace.project.slug}`}>View public project ↗</Link>}</div><div className="workspace-status-row"><span className="status-pill">{workspace.project.status.replaceAll('_',' ')}</span><span>{workspace.roster.length} team member{workspace.roster.length===1?'':'s'}</span><span>{workspace.milestones.length} milestone{workspace.milestones.length===1?'':'s'}</span></div>{isLead&&<TeamProjectRequests teams={clubTeams} projectId={projectId}/>} {isLead&&<ApplicationReviewList applications={applications}/>}<div className="workspace-two-col"><div>{isLead?<RosterManager projectId={projectId} roster={workspace.roster}/>:<RosterReadOnly roster={workspace.roster}/>} {isLead&&<TeamInviteForm projectId={projectId} members={directory} roster={workspace.roster}/>}</div><div>{isLead?<MilestoneManager projectId={projectId} milestones={workspace.milestones}/>:<MilestonesReadOnly milestones={workspace.milestones}/>}</div></div><TeamUpdateForm projectId={projectId}/><section className="workspace-section"><p className="eyebrow">History</p><h2>Team update submissions</h2>{workspace.updates.length?<div className="workspace-updates">{workspace.updates.map(update=><article key={update.id}><span className={`status-pill status-${update.reviewStatus.toLowerCase()}`}>{update.reviewStatus.replaceAll('_',' ')}</span><div><strong>{update.title}</strong><p>{update.summary}</p>{update.reviewFeedback&&<small>Review note: {update.reviewFeedback}</small>}</div></article>)}</div>:<p className="empty-copy">No team updates submitted yet.</p>}</section></main>}
-function RosterReadOnly({roster}:{roster:Awaited<ReturnType<typeof getProjectWorkspace>>['roster']}){return <section className="workspace-section"><p className="eyebrow">Team</p><h2>Roster</h2><div className="workspace-roster">{roster.map(m=><article key={m.userId}><div className="member-card__initial">{m.displayName.slice(0,1)}</div><div><strong>{m.displayName}</strong><small>{m.role==='LEAD'?'Project Lead':'Team member'}</small></div></article>)}</div></section>}
-function MilestonesReadOnly({milestones}:{milestones:Awaited<ReturnType<typeof getProjectWorkspace>>['milestones']}){return <section className="workspace-section"><p className="eyebrow">Plan</p><h2>Milestones</h2><div className="milestone-list">{milestones.map(m=><article key={m.id}><span className="status-pill">{m.status.replaceAll('_',' ')}</span><div><strong>{m.title}</strong><p>{m.description}</p></div></article>)}</div></section>}
+import { getProjectWorkspace, type ProjectWorkspace } from '@/lib/projects/workspace'
+import { ProjectWorkspaceView } from '@/components/member/workspace/ProjectWorkspaceView'
+import '@/components/projects/project-teams.css'
+
+async function loadWorkspace(projectId: string): Promise<ProjectWorkspace | null> {
+  try { return await getProjectWorkspace(projectId) }
+  catch (error) { if (error instanceof Error && ['PROJECT_WORKSPACE_FORBIDDEN', 'PROJECT_NOT_FOUND'].includes(error.message)) return null; throw error }
+}
+
+export default async function TeamWorkspacePage({ params }: { params: Promise<{ projectId: string }> }) {
+  await requireActiveMember()
+  const { projectId } = await params
+  if (!z.string().uuid().safeParse(projectId).success) notFound()
+  const workspace = await loadWorkspace(projectId)
+  if (!workspace) return <main className="admin-panel pt-page"><Link className="pt-back" href="/member/teams"><ArrowLeft size={16}/>My teams</Link><div className="portal-empty"><div><h1>You are not on this project team</h1><p>You may have left the team, been removed, or the project was closed. Your other teams are unchanged.</p><Link className="portal-text-link" href="/member/projects">Find a project</Link></div></div></main>
+  const isLead = workspace.myRole === 'LEAD'
+  const [clubTeams, applications, directory] = isLead ? await Promise.all([listClubTeams(), listProjectApplications(projectId), searchMemberDirectory('')]) : [[], [], []]
+  return <ProjectWorkspaceView projectId={projectId} workspace={workspace} applications={applications} directory={directory} clubTeams={clubTeams}/>
+}

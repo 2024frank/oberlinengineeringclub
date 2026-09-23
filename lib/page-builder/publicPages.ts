@@ -1,4 +1,5 @@
 import 'server-only'
+import { getProjectTeamStats } from '@/lib/content/projectTeamStats'
 import { previewProjects, previewMedia, publicPreviewEnabled } from '@/lib/content/previewProjects'
 import { cache } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
@@ -68,4 +69,4 @@ export async function getPublicSiteSettings(){
 
 export async function getCmsRenderContext(){if(publicPreviewEnabled())return{projects:previewProjects,media:previewMedia};if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return{};const s=await createSupabaseServerClient();const[projects,events,opportunities,news,leaders,sponsors,media]=await Promise.all([
   s.from('projects').select('*').eq('publication_state','published').order('sort_order').limit(12),s.from('events').select('*').eq('publication_state','published').gte('start_at',new Date().toISOString()).order('start_at').limit(12),s.from('opportunities').select('*').eq('publication_state','published').order('deadline').limit(12),s.from('news_posts').select('*').eq('publication_state','published').order('published_at',{ascending:false}).limit(12),s.from('leaders').select('*').eq('publication_state','published').eq('current',true).order('sort_order').limit(12),s.from('sponsors').select('*').eq('publication_state','published').order('sort_order').limit(12),s.from('media').select('id,public_url,alt_text').limit(200)
-]);return{projects:projects.data??[],events:events.data??[],opportunities:opportunities.data??[],news:news.data??[],leaders:leaders.data??[],sponsors:sponsors.data??[],media:Object.fromEntries((media.data??[]).map(m=>[m.id,{url:m.public_url,alt:m.alt_text}]))}}
+]);const teamStats=await getProjectTeamStats((projects.data??[]).map(p=>p.id));return{projects:projects.data??[],teamStats,events:events.data??[],opportunities:opportunities.data??[],news:news.data??[],leaders:leaders.data??[],sponsors:sponsors.data??[],media:Object.fromEntries((media.data??[]).map(m=>[m.id,{url:m.public_url,alt:m.alt_text}]))}}

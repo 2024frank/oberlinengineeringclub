@@ -15,3 +15,6 @@ export const previewProjects = rows.map(([slug,title,summary,discipline],index)=
 }))
 export const previewMedia = Object.fromEntries(previewProjects.map(p=>[p.slug,{url:`https://qaudokydctziaoakvkyv.supabase.co/storage/v1/object/public/oec-media/2026/projects-${p.slug}.jpg`,alt:p.title}]))
 export function publicPreviewEnabled() { return process.env.OEC_PUBLIC_PREVIEW==='1'&&!process.env.NEXT_PUBLIC_SUPABASE_URL }
+// Sample team progress for the local preview so team status can be reviewed without a database.
+export const previewTeamStats: Record<string,{memberCount:number;milestonesTotal:number;milestonesDone:number;startedAt:string|null}> = Object.fromEntries(previewProjects.map((p,index)=>[p.id,
+  index===0?{memberCount:4,milestonesTotal:5,milestonesDone:2,startedAt:'2026-09-12T16:00:00Z'}:index===1?{memberCount:2,milestonesTotal:0,milestonesDone:0,startedAt:null}:{memberCount:0,milestonesTotal:0,milestonesDone:0,startedAt:null}]))

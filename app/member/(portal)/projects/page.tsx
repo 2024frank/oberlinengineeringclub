@@ -6,10 +6,12 @@ import { listMyProjectApplications } from '@/lib/projects/applications'
 import { listMyProjectWorkspaces } from '@/lib/projects/workspace'
 import { MemberProjectBrowser } from '@/components/member/MemberProjectBrowser'
 import { listProjectRosters } from '@/lib/teams/server'
+import { getProjectTeamStats } from '@/lib/content/projectTeamStats'
 
 export default async function MemberProjectsPage() {
   const member = await requireActiveMember()
   const [projects, applications, teams, rosters] = await Promise.all([listPublishedProjects(), listMyProjectApplications(member.userId), listMyProjectWorkspaces(), listProjectRosters()])
+  const stats = await getProjectTeamStats(projects.map(project => project.id))
   const items = projects.map(project => ({ id: project.id, title: project.title, summary: project.summary ?? '', disciplines: project.disciplines ?? [], skills: project.skills ?? [], recruiting: Boolean(project.recruiting), problem: project.problem ?? '', goal: project.goal ?? '' }))
-  return <main className="admin-panel"><div className="admin-page-heading"><div><h1>Find a project</h1><p>Explore what the club is building and see who has joined.</p></div><Link className="button button--ghost" href="/member/proposals?new=1"><Lightbulb size={18}/>Propose an idea</Link></div><MemberProjectBrowser projects={items} rosters={rosters} applications={applications.map(application => ({ projectId: application.projectId, status: application.status }))} teamIds={teams.map(team => team.projectId)}/></main>
+  return <main className="admin-panel"><div className="admin-page-heading"><div><h1>Find a project</h1><p>Explore what the club is building and see who has joined.</p></div><Link className="button button--ghost" href="/member/proposals?new=1"><Lightbulb size={18}/>Propose an idea</Link></div><MemberProjectBrowser projects={items} rosters={rosters} applications={applications.map(application => ({ projectId: application.projectId, status: application.status }))} teamIds={teams.map(team => team.projectId)} stats={stats}/></main>
 }

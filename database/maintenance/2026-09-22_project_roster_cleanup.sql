@@ -53,7 +53,7 @@ delete from public.content_drafts where entity_type='project_updates' and entity
 delete from public.projects where slug='do-probe-amplifier-mayfly-data-logger';
 
 -- Result: remaining leads per project.
-select p.title as project, count(*) filter (where pm.role='LEAD') as leads, count(*) as members
+select p.title as project, count(*) filter (where pm.role='LEAD') as leads, count(pm.user_id) as members
 from public.projects p left join public.project_memberships pm on pm.project_id=p.id and pm.status='ACTIVE'
 group by p.title order by p.title;
 

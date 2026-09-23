@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, Search } from "lucide-react";
 import { useFormReady } from "@/components/member/useFormReady";
+import { MilestoneMeter } from "@/components/projects/MilestoneMeter";
+import { teamPhaseLabels, type TeamPhase } from "@/lib/content/teamStatsModel";
 
 export type ProjectCardData = {
   id: string;
@@ -14,6 +16,10 @@ export type ProjectCardData = {
   difficulty?: string;
   disciplines: string[];
   image?: { url: string; alt: string };
+  phase?: TeamPhase;
+  memberCount?: number;
+  milestonesDone?: number;
+  milestonesTotal?: number;
 };
 export function ProjectCards({
   projects,
@@ -94,10 +100,12 @@ export function ProjectCards({
               <p>{p.summary}</p>
             </div>
             <div className="project-tile__footer">
-              <span className="project-state">
-                {p.status.replaceAll("_", " ").toLowerCase()}
+              <span className={"project-team project-team--" + (p.phase ?? "closed")}>
+                <span className="project-team__phase">{teamPhaseLabels[p.phase ?? "closed"]}</span>
+                {Boolean(p.memberCount) && <span className="project-team__count">{p.memberCount} {p.memberCount === 1 ? "member" : "members"}</span>}
               </span>
               <ArrowUpRight size={21} aria-hidden="true" />
+              {Boolean(p.milestonesTotal) && <MilestoneMeter done={p.milestonesDone} total={p.milestonesTotal} />}
             </div>
           </Link>
         ))}

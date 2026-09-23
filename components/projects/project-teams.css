@@ -134,3 +134,35 @@
   .portal-shell .pt-milestone-controls { justify-content: flex-start; }
   .portal-shell .pt-search { max-width: none; }
 }
+
+/* Member dashboard */
+.portal-shell .dash-projects { display: grid; border-top: 1px solid var(--portal-line); }
+.portal-shell .dash-project { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 20px; align-items: center; gap: 18px; padding: 16px 4px; border-bottom: 1px solid var(--portal-line); color: var(--portal-ink); }
+.portal-shell .dash-project:hover { background: #f4f7f4; }
+.portal-shell .dash-project__title { display: grid; gap: 3px; min-width: 0; }
+.portal-shell .dash-project__title strong { font-size: 15px; }
+.portal-shell .dash-project small { font-size: 13px; color: var(--portal-muted); }
+.portal-shell .dash-project__progress { display: grid; gap: 6px; min-width: 0; }
+.portal-shell .dash-project > svg { color: var(--portal-muted); }
+.portal-shell .dash-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; margin-bottom: 28px; }
+.portal-shell .dash-columns .pt-card > h2 { margin-bottom: 12px; }
+.portal-shell .dash-subhead { margin: 20px 0 4px; font: 600 14px/1.4 Inter, Arial, sans-serif; color: var(--portal-muted); }
+.portal-shell .dash-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.portal-shell .dash-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--portal-line); }
+.portal-shell .dash-list li:first-child { border-top: 0; }
+.portal-shell .dash-list li > div { display: grid; gap: 3px; min-width: 0; }
+.portal-shell .dash-list strong { font-size: 14px; }
+.portal-shell .dash-list small { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 13px; color: var(--portal-muted); }
+.portal-shell .dash-list small a { color: var(--portal-accent); font-weight: 600; }
+.portal-shell .dash-quick { display: grid; justify-items: end; gap: 4px; flex: none; }
+.portal-shell .dash-quick__error { max-width: 200px; font-size: 12px; color: var(--pt-bad); text-align: right; }
+.portal-shell .dash-post-link { justify-self: start; font-size: 13px; font-weight: 600; color: var(--portal-accent); }
+@media (max-width: 900px) { .portal-shell .dash-columns { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 620px) {
+  .portal-shell .dash-project { grid-template-columns: minmax(0, 1fr) 20px; }
+  .portal-shell .dash-project__progress { grid-column: 1; }
+  .portal-shell .dash-project > svg { grid-row: 1; grid-column: 2; }
+  .portal-shell .dash-list li { flex-wrap: wrap; }
+  .portal-shell .dash-quick { justify-items: start; }
+}
+.portal-shell .dash-project small.pt-overdue { color: var(--pt-bad); }

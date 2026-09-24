@@ -376,3 +376,51 @@
   .professional-site .photo-hero h1 { font-size: 54px; }
   .professional-site .cta-section { padding-block: 96px; }
 }
+
+/* Second pass: a statement under the hero, calmer chrome, and restrained motion. */
+.professional-site .public-header__inner { height: 80px; min-height: 80px; }
+.professional-site .public-header__brand .brand-logo { width: 50px; height: 50px; }
+.professional-site .expanded-navigation { max-height: calc(100svh - 80px); }
+.professional-site .section-heading .text-link, .professional-site .home-statement .text-link { color: var(--oec-charcoal); text-decoration: underline; text-underline-offset: 6px; text-decoration-color: var(--oec-border); }
+.professional-site .section-heading .text-link:hover, .professional-site .home-statement .text-link:hover { text-decoration-color: currentColor; }
+.professional-site .photo-hero::after { background: linear-gradient(180deg, var(--oec-overlay-clear) 25%, var(--oec-overlay) 100%), linear-gradient(90deg, var(--oec-overlay) 0%, var(--oec-overlay-clear) 55%); opacity: 0.9; }
+.professional-site .photo-hero__inner { min-height: min(880px, calc(100svh - 80px)); }
+
+.professional-site .home-statement { padding-block: 128px 40px; }
+.professional-site .home-statement .shell { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); gap: 48px 80px; align-items: end; }
+.professional-site .home-statement__lead { font-size: clamp(30px, 3.6vw, 54px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 500; color: var(--oec-charcoal); margin: 0; text-wrap: balance; }
+.professional-site .home-statement__aside p { font-size: 17px; line-height: 1.6; color: var(--oec-muted); margin: 0 0 18px; }
+.professional-site .projects-section--home { padding-top: 96px; }
+
+
+@keyframes oec-hero-settle { from { transform: scale(1.08); } to { transform: none; } }
+@keyframes oec-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .professional-site .photo-hero__image { animation: oec-hero-settle 2.4s cubic-bezier(.2, .7, .2, 1) both; }
+  .professional-site .photo-hero h1 { animation: oec-rise 1s cubic-bezier(.2, .7, .2, 1) 0.15s both; }
+  .professional-site .photo-hero__aside { animation: oec-rise 1s cubic-bezier(.2, .7, .2, 1) 0.4s both; }
+  @supports (animation-timeline: view()) {
+    .professional-site :is(.home-statement .shell > *, .section-heading, .project-tile, .discipline-grid article, .cta-inner) { animation: oec-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
+  }
+}
+
+@media (max-width: 950px) {
+  .professional-site .home-statement .shell { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .professional-site .public-header__inner { height: 72px; min-height: 72px; }
+  .professional-site .home-statement { padding-block: 80px 16px; }
+  .professional-site .photo-hero__inner { min-height: min(700px, calc(100svh - 72px)); }
+}
+.professional-site .public-footer .footer-wordmark { max-width: none; margin: 0; padding: 56px 0 12px; font-size: clamp(36px, 8.6vw, 128px); line-height: 1; font-weight: 600; letter-spacing: -0.055em; white-space: nowrap; color: var(--oec-inverse-muted); opacity: 0.18; overflow: hidden; user-select: none; }
+.professional-site .event-planning { background: none; border: 0; border-top: 1px solid var(--oec-charcoal); padding: 24px 0 0; }
+.professional-site .event-planning > p { font-size: 17px; margin: 0 0 40px; }
+.professional-site .event-planning article { background: none; border: 0; border-top: 1px solid var(--oec-border); border-radius: 0; padding: 20px 0 0; }
+.professional-site .event-planning h3 { font-size: 24px; letter-spacing: -0.02em; }
+.professional-site :is(.project-tile__footer svg, .project-proposal-prompt .text-link) { color: var(--oec-charcoal); }
+.professional-site .project-proposal-prompt .text-link { text-decoration: underline; text-underline-offset: 6px; text-decoration-color: var(--oec-border); }
+.professional-site .project-tile:hover .project-tile__footer svg { transform: translate(3px, -3px); }
+.professional-site .project-tile__footer svg { transition: transform 200ms; }
+.professional-site .cms-section:not(.cms-section--cardinal, .cta-section) + .cms-section:not(.cms-section--cardinal, .cta-section) { padding-top: 0; }
+.professional-site .editorial-hero { padding-block: 96px 72px; }
+.professional-site .editorial-hero h1 { font-size: clamp(48px, 7vw, 104px); letter-spacing: -0.045em; line-height: 0.95; }

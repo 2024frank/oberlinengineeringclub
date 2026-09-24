@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { NextMeeting } from "@/components/public/NextMeeting";
 import { homeIntroduction, publicCopy } from "@/lib/content/publicCopy";
 import type { z } from "zod";
@@ -34,6 +34,15 @@ export function HeroSection({
         </div>
       </section>
       <NextMeeting events={context?.events ?? []}/>
+      <section className="home-statement" aria-label="About the club">
+        <div className="shell">
+          <p className="home-statement__lead">A student club at Oberlin College. We repair, design, and build real hardware together, one team project at a time.</p>
+          <div className="home-statement__aside">
+            <p>No engineering experience needed, and you don’t have to be in the 3-2 program.</p>
+            <Link className="text-link" href="/about">About the club <ArrowUpRight size={17} aria-hidden="true"/></Link>
+          </div>
+        </div>
+      </section>
     </>;
   }
   const image = media?.url;

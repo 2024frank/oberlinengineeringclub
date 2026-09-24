@@ -16,13 +16,15 @@ Editor access is limited to explicitly assigned content scopes. Editor does not 
 
 ## Officer onboarding
 
-1. Super Admin opens staff controls and creates an invitation with role/scopes.
-2. The officer receives an email link tied to the invited email identity.
-3. The officer opens the link, presses **Continue securely** on the scanner-safe confirmation page, and chooses a password.
+1. Super Admin opens staff controls and creates an invitation with role/scopes. Club members are invited at the email they already use; their existing account is reused.
+2. The officer receives an email link tied to the invited email identity. It signs in an existing account, or creates one for a new email.
+3. The officer opens the link, presses **Continue securely** on the scanner-safe confirmation page, and chooses a password. A member may enter their current password; the password belongs to the one shared account.
 4. The server activates the officer only when the authenticated email matches the invitation and the invitation is valid, unused, unrevoked, and unexpired.
 5. Super Admin can suspend/revoke the account later.
 
-An uninvited Supabase identity is not an OEC staff account.
+An uninvited Supabase identity is not an OEC staff account. Someone who is already active staff cannot be invited again; change their access from **Manage** instead. A suspended officer can be reinstated with a new invitation.
+
+Invitations last 72 hours. If the link or email cannot be created, no invitation is saved and the Super Admin can simply try again. **Resend** emails a fresh link for a pending or expired invitation and restarts the 72 hours; earlier links for that invitation stop working. Expired invitations are listed separately until they are resent or dismissed, are not counted as pending on the dashboard, and do not block a new invitation to the same email. Migration `028_staff_invite_lifecycle.sql` must be applied before deploying this workflow.
 
 ## Member lifecycle
 

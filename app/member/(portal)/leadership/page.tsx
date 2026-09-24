@@ -8,7 +8,7 @@ export default async function MemberLeadershipPage({ searchParams }: { searchPar
   const params = await searchParams
   const [positions, applications] = await Promise.all([listOfficerPositions(), listOfficerApplications()])
   return <main className="admin-panel leadership-page">
-    <div className="admin-page-heading"><h1>Open positions</h1></div>
+    <div className="admin-page-heading"><h1>Officer openings</h1></div>
     <MemberOfficerOpenings positions={positions} applications={applications.filter(application => application.userId === member.userId)} positionId={typeof params.position === 'string' ? params.position : undefined}/>
   </main>
 }

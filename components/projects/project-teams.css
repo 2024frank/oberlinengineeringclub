@@ -167,3 +167,4 @@
   .portal-shell .dash-quick { justify-items: start; }
 }
 .portal-shell .dash-project small.pt-overdue { color: var(--pt-bad); }
+.portal-shell .project-delete { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--portal-line); }

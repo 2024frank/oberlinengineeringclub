@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, Search } from "lucide-react";
 import { useFormReady } from "@/components/member/useFormReady";
+import { AdvancedProjectFilters, type ProjectFilterDefaults } from "@/components/public/filters/ProjectFilters";
 import { MilestoneMeter } from "@/components/projects/MilestoneMeter";
 import { teamPhaseLabels, type TeamPhase } from "@/lib/content/teamStatsModel";
+
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 export type ProjectCardData = {
   id: string;
@@ -25,10 +28,12 @@ export function ProjectCards({
   projects,
   searchable = false,
   layout = 'grid',
+  filters,
 }: {
   projects: ProjectCardData[];
   searchable?: boolean;
-  layout?: 'grid' | 'list';
+  filters?: ProjectFilterDefaults;
+  layout?: 'grid' | 'list' | 'featured';
 }) {
   const [query, setQuery] = useState("");
   const ready = useFormReady();
@@ -68,15 +73,16 @@ export function ProjectCards({
             <option value="">All disciplines</option>
             {disciplines.map((d) => (
               <option key={d} value={d}>
-                {d}
+                {capitalize(d)}
               </option>
             ))}
           </select>
           <span role="status">{filtered.length} {filtered.length === 1 ? 'project' : 'projects'}</span>
         </div>
       )}
-      <div className={'project-grid' + (layout === 'list' ? ' project-grid--list' : '')}>
-        {filtered.map((p) => (
+      {filters && <AdvancedProjectFilters defaults={filters} />}
+      <div className={'project-grid' + (layout === 'grid' ? '' : ' project-grid--' + layout)}>
+        {filtered.map((p, index) => (
           <Link
             className="project-tile"
             href={"/projects/" + p.slug}
@@ -88,13 +94,13 @@ export function ProjectCards({
                   src={p.image.url}
                   alt={p.image.alt || p.title}
                   fill
-                  sizes={layout === 'list' ? '(max-width:600px) 105px,(max-width:950px) 160px,(max-width:1150px) 180px,210px' : '(max-width:600px) 90vw,(max-width:1000px) 44vw,390px'}
+                  sizes={layout === 'list' ? '(max-width:600px) 105px,(max-width:950px) 160px,(max-width:1150px) 180px,210px' : layout === 'featured' && index === 0 ? '(max-width:1000px) 90vw,800px' : '(max-width:600px) 90vw,(max-width:1000px) 44vw,390px'}
                 />
               </div>
             )}
             <div className="project-tile__body">
               <span className="project-discipline">
-                {[...p.disciplines, p.difficulty].filter(Boolean).join(", ")}
+                {[...p.disciplines, p.difficulty].filter(Boolean).map((value) => capitalize(String(value))).join(", ")}
               </span>
               <h3>{p.title}</h3>
               <p>{p.summary}</p>

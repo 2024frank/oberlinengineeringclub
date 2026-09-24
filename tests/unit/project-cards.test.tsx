@@ -25,4 +25,17 @@ describe('Project discovery',()=>{
     await user.click(screen.getByRole('button',{name:'Clear search'}))
     expect(screen.getAllByRole('link')).toHaveLength(2)
   })
+  it('puts the extra filters after the search row and keeps one discipline control',()=>{
+    const {container}=render(<ProjectCards projects={projects} searchable filters={{status:'active',discipline:'electrical'}}/>)
+    const search=container.querySelector('.project-search')!
+    const details=container.querySelector('details.advanced-filters') as HTMLDetailsElement
+    expect(search.compareDocumentPosition(details)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(details.open).toBe(true)
+    expect(details.querySelector('input[name="discipline"]')).toHaveAttribute('type','hidden')
+    expect(details.querySelector('input[name="discipline"]')).toHaveValue('electrical')
+  })
+  it('leaves the extra filters out when none are passed',()=>{
+    const {container}=render(<ProjectCards projects={projects} searchable/>)
+    expect(container.querySelector('details.advanced-filters')).toBeNull()
+  })
 })

@@ -17,7 +17,7 @@ export default async function MemberDirectoryPage({ searchParams }: { searchPara
   const filters = { discipline:one(params.discipline), skill:one(params.skill), major:one(params.major), classYear:one(params.year), interest:one(params.interest), availability:one(params.availability) }
   const members = filterDirectoryMembers(safeMembers,filters)
   const options = { disciplines:uniqList(safeMembers.map(m=>m.disciplines)), skills:uniqList(safeMembers.map(m=>m.skills)), majors:uniq(safeMembers.map(m=>m.major)), classYears:Array.from(new Set(safeMembers.map(m=>m.classYear).filter((v):v is number=>typeof v==='number'))).sort((a,b)=>a-b), interests:uniqList(safeMembers.map(m=>m.projectInterests)) }
-  return <main className="admin-panel"><div className="admin-page-heading"><div><h1>Find teammates</h1><p>Meet members, see their projects, and invite them to work with you.</p></div></div>
+  return <main className="admin-panel"><div className="admin-page-heading"><div><h1>Member directory</h1><p>Meet members, see their projects, and invite them to work with you.</p></div></div>
     <DirectoryFilters initial={{ q:query,...filters,year:filters.classYear }} options={options}/><p className="directory-result-count">{members.length} member{members.length === 1 ? '' : 's'} shown</p>
     {members.length ? <div className="member-directory-grid">{members.map(member => {
       const joinedTeams = teams.filter(team => team.roster.some(person => person.userId === member.userId))

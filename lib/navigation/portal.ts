@@ -14,9 +14,9 @@ export function adminPortalGroups(role: AdminRole): PortalNavGroup[] {
 }
 
 export const memberPortalGroups: PortalNavGroup[] = [
-  { label: 'Workspace', items: [item('Dashboard', '/member', 'home'), item('Find a project', '/member/projects', 'search'), item('My teams', '/member/teams', 'projects'), item('Find a team', '/member/teams/find', 'people')] },
-  { label: 'My activity', items: [item('My applications', '/member/applications', 'requests'), item('Invitations', '/member/invitations', 'inbox'), item('My ideas', '/member/proposals', 'idea'), item('Notifications', '/member/notifications', 'bell')] },
-  { label: 'Community', items: [item('Find teammates', '/member/directory', 'people'), item('Open positions', '/member/leadership', 'people'), item('Saved items', '/member/saved', 'bookmark'), item('My profile', '/member/profile', 'profile')] },
+  { label: 'Workspace', items: [item('Dashboard', '/member', 'home'), item('Find a project', '/member/projects', 'search'), item('My teams', '/member/teams', 'projects'), item('My ideas', '/member/proposals', 'idea')] },
+  { label: 'Inbox', items: [item('Notifications', '/member/notifications', 'bell'), item('Invitations', '/member/invitations', 'inbox'), item('My applications', '/member/applications', 'requests')] },
+  { label: 'Community', items: [item('Member directory', '/member/directory', 'people'), item('Officer openings', '/member/leadership', 'people'), item('Saved items', '/member/saved', 'bookmark'), item('My profile', '/member/profile', 'profile')] },
 ]
 
 export function portalPath(pathname: string, portal: 'admin' | 'member') {
@@ -25,6 +25,5 @@ export function portalPath(pathname: string, portal: 'admin' | 'member') {
 }
 
 export function isPortalItemActive(pathname: string, href: string) {
-  if (href === '/member/teams' && pathname === '/member/teams/find') return false
   return pathname === href || (!['/admin', '/member'].includes(href) && pathname.startsWith(`${href}/`))
 }

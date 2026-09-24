@@ -9,7 +9,10 @@ export async function metadataForCmsPage(page: PageSnapshot): Promise<Metadata> 
   const path = page.slug === 'home' ? '' : `/${page.slug}`
   const settings = await getPublicSiteSettings()
   const rawTitle = page.seoTitle || page.title
-  const patterned = settings.seo.titlePattern.includes('%s') ? settings.seo.titlePattern.replace('%s', rawTitle) : rawTitle
+  const pattern = settings.seo.titlePattern
+  // Many CMS SEO titles already end with the club name; do not append it twice.
+  const suffix = pattern.includes('%s') ? pattern.slice(pattern.indexOf('%s') + 2).trim() : ''
+  const patterned = pattern.includes('%s') && !(suffix && rawTitle.includes(suffix.replace(/^[·|\-–—]\s*/, ''))) ? pattern.replace('%s', rawTitle) : rawTitle
   const title = page.slug === 'home' ? rawTitle : patterned
   const description = page.seoDescription || undefined
   let image: { url: string; alt: string; width?: number; height?: number } = {

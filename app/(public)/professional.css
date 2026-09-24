@@ -440,7 +440,6 @@
 }
 .professional-site .project-state {
   font-size: 12px;
-  text-transform: capitalize;
   color: var(--oec-muted);
   background: var(--oec-cream);
   border-radius: 3px;
@@ -614,7 +613,96 @@
   margin-top: 18px;
 }
 .professional-site .project-detail-skills {
-  padding-left: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+.professional-site .prose .project-detail-skills li {
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 7px 12px;
+  border: 1px solid var(--oec-border);
+  border-radius: 999px;
+  background: var(--oec-surface);
+}
+.professional-site .project-stage-track {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 860px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.professional-site .project-stage-track li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-top: 12px;
+  border-top: 3px solid var(--oec-border);
+  font-size: 13px;
+  color: var(--oec-muted);
+}
+.professional-site .project-stage-track li > span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--oec-border);
+  background: var(--oec-surface);
+  font-size: 11px;
+}
+.professional-site .project-stage-track li.is-done {
+  border-top-color: var(--oec-cardinal);
+}
+.professional-site .project-stage-track li.is-done > span {
+  border-color: var(--oec-cardinal);
+  color: var(--oec-cardinal);
+}
+.professional-site .project-stage-track li.is-current {
+  border-top-color: var(--oec-cardinal);
+  color: var(--oec-charcoal);
+  font-weight: 600;
+}
+.professional-site .project-stage-track li.is-current > span {
+  border-color: var(--oec-cardinal);
+  background: var(--oec-cardinal);
+  color: var(--oec-surface);
+}
+.professional-site .more-projects {
+  padding-block: 64px 90px;
+  border-top: 1px solid var(--oec-border);
+  background: var(--oec-cream);
+}
+.professional-site .more-projects__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.professional-site .more-projects__heading h2 {
+  font-size: 32px;
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .professional-site .project-stage-track {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .professional-site .project-stage-track li {
+    padding: 8px 0 8px 12px;
+    border-top: 0;
+    border-left: 3px solid var(--oec-border);
+  }
+  .professional-site .project-stage-track li.is-done,
+  .professional-site .project-stage-track li.is-current {
+    border-left-color: var(--oec-cardinal);
+  }
 }
 .professional-site .advanced-filters summary {
   font-size: 15px;
@@ -1287,5 +1375,116 @@
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Homepage: the lead project gets a wide tile, with the next three below it. */
+.professional-site .project-grid.project-grid--featured {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.professional-site .project-grid--featured .project-tile:first-child {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+}
+.professional-site .project-grid--featured .project-tile:first-child .project-tile__image {
+  grid-row: 1 / 3;
+  min-height: 340px;
+}
+.professional-site .project-grid--featured .project-tile:first-child .project-tile__body {
+  align-self: center;
+  padding: 36px 36px 24px;
+}
+.professional-site .project-grid--featured .project-tile:first-child h3 {
+  font-size: clamp(26px, 2.6vw, 34px);
+}
+.professional-site .project-grid--featured .project-tile:first-child .project-tile__footer {
+  padding: 18px 36px;
+}
+.professional-site .project-grid--featured .project-tile:not(:first-child) p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.professional-site .home-steps {
+  border-bottom: 1px solid var(--oec-border);
+  background: var(--oec-surface);
+}
+.professional-site .home-steps ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  margin: 0;
+  padding: 36px 0;
+  list-style: none;
+  counter-reset: home-step;
+}
+.professional-site .home-steps li {
+  counter-increment: home-step;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 4px 14px;
+}
+.professional-site .home-steps li::before {
+  content: counter(home-step);
+  grid-row: span 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--oec-brand-soft);
+  color: var(--oec-cardinal);
+  font-weight: 700;
+}
+.professional-site .home-steps strong {
+  display: block;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--oec-charcoal);
+}
+.professional-site .home-steps p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--oec-muted);
+}
+.professional-site .home-steps a {
+  color: inherit;
+  text-decoration: none;
+}
+.professional-site .home-steps a:hover strong {
+  color: var(--oec-cardinal);
+}
+@media (max-width: 1000px) {
+  .professional-site .project-grid.project-grid--featured {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .professional-site .project-grid--featured .project-tile:first-child {
+    display: flex;
+  }
+  .professional-site .project-grid--featured .project-tile:first-child .project-tile__image {
+    aspect-ratio: 16/8;
+    min-height: 0;
+  }
+  .professional-site .project-grid--featured .project-tile:first-child .project-tile__body,
+  .professional-site .project-grid--featured .project-tile:first-child .project-tile__footer {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+@media (max-width: 760px) {
+  .professional-site .project-grid.project-grid--featured,
+  .professional-site .home-steps ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .professional-site .home-steps ol {
+    gap: 20px;
+    padding: 28px 0;
   }
 }

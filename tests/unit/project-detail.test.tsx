@@ -1,9 +1,12 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import ProjectPage from '@/app/(public)/projects/[slug]/page'
 
 const fixture = vi.hoisted(() => ({ project: {} as Record<string, unknown>, member: null as null | { userId: string }, teams: [] as { projectId: string }[], applications: [] as { projectId: string; status: string }[], stats: {} as Record<string, unknown> }))
-vi.mock('@/lib/content/projects', () => ({ getPublishedProject: async () => fixture.project }))
+vi.mock('@/lib/content/projects', () => ({
+  getPublishedProject: async () => fixture.project,
+  listPublishedProjects: async () => [fixture.project, { id: 'recycler', slug: 'pet-recycler', title: 'PET Recycler', summary: 'Turn bottles into filament.', status: 'active', disciplines: ['environmental'] }],
+}))
 vi.mock('@/lib/auth/memberSession', () => ({ getCurrentMember: async () => fixture.member }))
 vi.mock('@/lib/content/projectTeamStats', () => ({ getProjectTeamStats: async () => fixture.stats }))
 vi.mock('@/lib/projects/workspace', () => ({ listMyProjectWorkspaces: async () => fixture.teams }))
@@ -56,8 +59,10 @@ it('preserves detailed proposals without repeating their summary in the brief', 
 it('shows live team status and milestone progress without naming anyone', async () => {
   fixture.stats = { printer: { memberCount: 3, milestonesTotal: 4, milestonesDone: 1, startedAt: '2026-09-12T16:00:00Z' } }
   render(await ProjectPage({ params: Promise.resolve({ slug: 'ender-3-klipper-upgrade' }) }))
-  expect(screen.getByText('Underway')).toBeVisible()
-  expect(screen.getByText('3 members')).toBeVisible()
+  // Scope to the join panel: the related project cards show their own team status.
+  const panel = within(screen.getByRole('complementary', { name: 'Join this project' }))
+  expect(panel.getByText('Underway')).toBeVisible()
+  expect(panel.getByText('3 members')).toBeVisible()
   expect(screen.getByText('Started Sep 12, 2026')).toBeVisible()
   expect(screen.getByRole('img', { name: '1 of 4 milestones done' })).toBeInTheDocument()
 })
@@ -78,4 +83,14 @@ it('tells visitors when a team is not taking members and offers a way to ask', a
   render(await ProjectPage({ params: Promise.resolve({ slug: 'ender-3-klipper-upgrade' }) }))
   expect(screen.getByText('This team is not taking new members right now.')).toBeVisible()
   expect(screen.getByRole('link', { name: 'Ask the club about this project' })).toHaveAttribute('href', '/get-involved?type=join_project&project=Ender%203%20Repair%20%26%20Klipper%20Upgrade')
+})
+
+it('shows where the project stands and suggests other projects', async () => {
+  render(await ProjectPage({ params: Promise.resolve({ slug: 'ender-3-klipper-upgrade' }) }))
+  const track = screen.getByRole('list', { name: 'Project stage' })
+  expect(track.querySelector('[aria-current="step"]')).toHaveTextContent('Open for interest')
+  expect(screen.getByRole('heading', { name: 'More projects' })).toBeVisible()
+  expect(screen.getByRole('link', { name: /PET Recycler/ })).toHaveAttribute('href', '/projects/pet-recycler')
+  expect(screen.getByText('Environmental')).toBeVisible()
+  expect(screen.queryAllByRole('link', { name: /Ender 3 Repair/ })).toHaveLength(0)
 })

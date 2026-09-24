@@ -34,6 +34,11 @@ export function HeroSection({
         </div>
       </section>
       <NextMeeting events={context?.events ?? []}/>
+      <section className="home-steps" aria-label="How it works"><div className="shell"><ol>
+        <li><Link href="/projects"><strong>Pick a project</strong></Link><p>Browse what teams are building and find one that fits your interests.</p></li>
+        <li><Link href="/get-involved"><strong>Join the club</strong></Link><p>No engineering experience needed, and you don’t have to be in the 3-2 program.</p></li>
+        <li><Link href="/member/login"><strong>Build with a team</strong></Link><p>Track tasks, meet teammates, and share progress from your member account.</p></li>
+      </ol></div></section>
     </>;
   }
   const image = media?.url;

@@ -2,19 +2,24 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check } from 'lucide-react'
 import { SaveButton } from '@/components/member/SaveButton'
 import { MilestoneMeter } from '@/components/projects/MilestoneMeter'
+import { ProjectCards } from '@/components/public/ProjectCards'
 import { getCurrentMember } from '@/lib/auth/memberSession'
-import { getPublishedProject } from '@/lib/content/projects'
+import { getPublishedProject, listPublishedProjects } from '@/lib/content/projects'
+import { projectCards } from '@/lib/content/projectCards'
 import { getProjectTeamStats } from '@/lib/content/projectTeamStats'
 import { teamPhase, teamPhaseLabels } from '@/lib/content/teamStatsModel'
 import { isSavedItem } from '@/lib/members/saves'
 import { publicMedia } from '@/lib/content/publicMedia'
 import { listMyProjectApplications } from '@/lib/projects/applications'
 import { listMyProjectWorkspaces } from '@/lib/projects/workspace'
-import { stageLabel } from '@/lib/projects/labels'
+import { stageLabels } from '@/lib/projects/labels'
 import { formatPortalDate } from '@/lib/format/portalDate'
+
+const stages = Object.keys(stageLabels)
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata> {
   const project=await getPublishedProject((await params).slug)
@@ -32,23 +37,39 @@ async function viewerState(member: Awaited<ReturnType<typeof getCurrentMember>>,
   return 'member' as const
 }
 
+// Up to three other projects, those sharing a discipline first. A failure here must not break the page.
+async function relatedProjects(project: { id: string; disciplines?: string[] }) {
+  try {
+    const all = (await listPublishedProjects({ skills: [] })) as Array<Record<string, unknown>>
+    const shares = (other: Record<string, unknown>) => Array.isArray(other.disciplines) && other.disciplines.some(d => project.disciplines?.includes(String(d)))
+    const others = all.filter(other => other.id !== project.id).sort((a, b) => Number(shares(b)) - Number(shares(a))).slice(0, 3)
+    const ids = others.map(other => String(other.id))
+    const [media, stats] = await Promise.all([publicMedia(others.map(other => other.cover_media_id).filter(Boolean) as string[]), getProjectTeamStats(ids)])
+    return projectCards(others, media, stats)
+  } catch { return [] }
+}
+
 export default async function ProjectPage({params}:{params:Promise<{slug:string}>}) {
   const {slug}=await params
   const p=await getPublishedProject(slug)
   if(!p)notFound()
   const member=await getCurrentMember()
-  const [media, stats, viewer, saved] = await Promise.all([
+  const [media, stats, viewer, saved, related] = await Promise.all([
     p.cover_media_id ? publicMedia([p.cover_media_id]) : Promise.resolve({} as Record<string, { url: string; alt: string }>),
     getProjectTeamStats([p.id]),
     viewerState(member, p.id),
     member ? isSavedItem(member.userId,'PROJECT',p.id) : Promise.resolve(false),
+    relatedProjects(p),
   ])
   const cover = media[p.cover_media_id]
   const team = stats[p.id]
   const phase = teamPhase(team, { status: String(p.status), recruiting: Boolean(p.recruiting) })
   const applyPath = `/member/applications?project=${p.id}`
+  const stageIndex = stages.indexOf(String(p.status))
   const timeline=(p.timeline??[]) as Array<{label?:string;title?:string;body?:string;description?:string}>
-  return <><section className="project-detail-heading"><div className="shell"><Link className="breadcrumb" href="/projects"><ArrowLeft size={16}/>All projects</Link><span className="project-state">{stageLabel(String(p.status))}</span><h1>{p.title}</h1>{(p.problem||p.goal)&&<p>{p.summary}</p>}<div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{d}</span>)}</div></div></section>
+  return <><section className="project-detail-heading"><div className="shell"><Link className="breadcrumb" href="/projects"><ArrowLeft size={16}/>All projects</Link><h1>{p.title}</h1>{(p.problem||p.goal)&&<p>{p.summary}</p>}<div className="tag-row">{(p.disciplines??[]).map((d:string)=><span key={d}>{capitalize(d)}</span>)}</div>
+    {stageIndex >= 0 && <ol className="project-stage-track" aria-label="Project stage">{stages.map((stage, index) => <li key={stage} className={index < stageIndex ? 'is-done' : index === stageIndex ? 'is-current' : undefined} aria-current={index === stageIndex ? 'step' : undefined}><span aria-hidden="true">{index < stageIndex ? <Check size={13}/> : index + 1}</span>{stageLabels[stage]}</li>)}</ol>}
+  </div></section>
   <section className="detail-body"><div className="shell detail-grid"><div className="prose">
     {cover && <figure className="project-cover"><Image src={cover.url} alt={cover.alt || p.title} width={1200} height={800} sizes="(max-width:950px) 100vw, 760px" priority/></figure>}
     {!p.problem&&!p.goal&&p.summary&&<><h2>Project brief</h2><p>{p.summary}</p></>}
@@ -74,5 +95,7 @@ export default async function ProjectPage({params}:{params:Promise<{slug:string}
     </div>
     <dl>{p.difficulty&&<><dt>Difficulty</dt><dd>{p.difficulty}</dd></>}{p.lead_name&&<><dt>Lead</dt><dd>{p.lead_name}</dd></>}{p.next_step&&<><dt>Next step</dt><dd>{p.next_step}</dd></>}</dl>
     {p.github_url&&<a className="text-link" href={p.github_url} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16}/></a>}{p.external_url&&<a className="text-link" href={p.external_url} target="_blank" rel="noreferrer">Project website <ArrowUpRight size={16}/></a>}
-  </aside></div></section></>
+  </aside></div></section>
+  {related.length > 0 && <section className="more-projects" aria-labelledby="more-projects"><div className="shell"><div className="more-projects__heading"><h2 id="more-projects">More projects</h2><Link className="text-link" href="/projects">All projects <ArrowUpRight size={16}/></Link></div><ProjectCards projects={related}/></div></section>}
+  </>
 }

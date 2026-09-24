@@ -18,7 +18,7 @@ describe('public color system', () => {
   it('keeps the header palette identical on the homepage and inner pages', () => {
     const overrides: string[] = []
     for (const sheet of styles) sheet.walkRules(rule => {
-      if (rule.selector.includes(':has(.project-home-hero)')) overrides.push(rule.selector)
+      if (rule.selector.includes(':has(.photo-hero)')) overrides.push(rule.selector)
     })
     expect(overrides).toEqual([])
   })
@@ -39,13 +39,13 @@ describe('public color system', () => {
     })
     const fixture = document.createElement('div')
     fixture.className = 'professional-site'
-    for (const surface of ['cms-section--cardinal', 'hero', 'project-home-hero', 'home-hero', 'directory-hero--image', 'detail-hero--image', 'public-footer']) {
+    for (const surface of ['cms-section--cardinal', 'cta-section cta-section--charcoal', 'hero', 'photo-hero', 'home-hero', 'directory-hero--image', 'detail-hero--image', 'public-footer']) {
       fixture.innerHTML = `<section class="${surface}"><a href="/projects">Projects</a><button>Join</button><input /><select></select><textarea></textarea><summary>Details</summary></section>`
       for (const control of fixture.querySelectorAll('a, button, input, select, textarea, summary')) {
         expect(selectors.some(selector => control.matches(selector)), `${surface} ${control.tagName}`).toBe(true)
       }
     }
-    fixture.innerHTML = '<section class="cta-section cta-section--charcoal"><a href="/join">Join</a></section>'
+    fixture.innerHTML = '<section class="project-tile"><a href="/join">Join</a></section>'
     expect(selectors.some(selector => fixture.querySelector('a')!.matches(selector))).toBe(false)
   })
 

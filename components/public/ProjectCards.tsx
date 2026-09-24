@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, Search } from "lucide-react";
 import { useFormReady } from "@/components/member/useFormReady";
+import { AdvancedProjectFilters, type ProjectFilterDefaults } from "@/components/public/filters/ProjectFilters";
 import { MilestoneMeter } from "@/components/projects/MilestoneMeter";
 import { teamPhaseLabels, type TeamPhase } from "@/lib/content/teamStatsModel";
 
@@ -27,9 +28,11 @@ export function ProjectCards({
   projects,
   searchable = false,
   layout = 'grid',
+  filters,
 }: {
   projects: ProjectCardData[];
   searchable?: boolean;
+  filters?: ProjectFilterDefaults;
   layout?: 'grid' | 'list' | 'featured';
 }) {
   const [query, setQuery] = useState("");
@@ -77,6 +80,7 @@ export function ProjectCards({
           <span role="status">{filtered.length} {filtered.length === 1 ? 'project' : 'projects'}</span>
         </div>
       )}
+      {filters && <AdvancedProjectFilters defaults={filters} />}
       <div className={'project-grid' + (layout === 'grid' ? '' : ' project-grid--' + layout)}>
         {filtered.map((p, index) => (
           <Link

@@ -11,7 +11,7 @@ export async function getDashboardSummary(role:AdminRole):Promise<DashboardSumma
   s.from('opportunities').select('*',{count:'exact',head:true}).eq('publication_state','published').gte('deadline',now.toISOString().slice(0,10)).lte('deadline',soon),
   s.from('scheduled_publications').select('*',{count:'exact',head:true}).is('processed_at',null),
   community?s.from('membership_requests').select('*',{count:'exact',head:true}).or('status.eq.PENDING_APPROVAL,and(status.in.(REQUESTED,EMAIL_VERIFIED),preapproved_at.is.null)'):Promise.resolve({count:0}),
-  role==='SUPER_ADMIN'?s.from('staff_invites').select('*',{count:'exact',head:true}).eq('status','INVITED'):Promise.resolve({count:0}),
+  role==='SUPER_ADMIN'?s.from('staff_invites').select('*',{count:'exact',head:true}).eq('status','INVITED').gt('expires_at',now.toISOString()):Promise.resolve({count:0}),
   community?s.from('project_proposals').select('*',{count:'exact',head:true}).eq('status','PENDING'):Promise.resolve({count:0}),
   community?s.from('project_update_reviews').select('*',{count:'exact',head:true}).eq('status','PENDING_REVIEW'):Promise.resolve({count:0}),
   community?s.from('project_applications').select('*',{count:'exact',head:true}).eq('status','PENDING'):Promise.resolve({count:0}),

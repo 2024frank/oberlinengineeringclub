@@ -1427,3 +1427,9 @@
     padding-right: 24px;
   }
 }
+@media (max-width: 700px) {
+  .professional-site .project-grid.project-grid--featured {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}

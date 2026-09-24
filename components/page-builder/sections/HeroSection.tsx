@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Lightbulb, LogIn } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { NextMeeting } from "@/components/public/NextMeeting";
 import { homeIntroduction, publicCopy } from "@/lib/content/publicCopy";
 import type { z } from "zod";
@@ -19,18 +19,24 @@ export function HeroSection({
     const image = media?.url && !media.url.includes("home-hero-workbench")
       ? media.url : "/brand/project-led/hardware-hero.webp";
     return <>
-      <section className="project-home-hero">
-        <Image className="project-home-hero__image" src={image} alt={media?.url === image ? (section.imageAlt || media.alt || "") : ""} fill priority sizes="100vw"/>
-        <div className="shell project-home-hero__inner">
-          <div className="project-home-hero__copy">
+      <section className="studio-hero">
+        <div className="shell studio-hero__grid">
+          <div className="studio-hero__copy">
+            <p className="studio-hero__kicker"><span>Student engineering</span><span>Oberlin College, Ohio</span></p>
             <h1>Oberlin<br/>Engineering Club<span aria-hidden="true">.</span></h1>
-            <p>{publicCopy(section.body) || homeIntroduction}</p>
-            <Link className="button button--light" href="/projects">Explore projects <ArrowRight size={20} aria-hidden="true"/></Link>
+            <p className="studio-hero__lede">{publicCopy(section.body) || homeIntroduction}</p>
+            <div className="studio-hero__actions">
+              <Link className="button button--primary" href="/projects">Explore projects <ArrowRight size={18} aria-hidden="true"/></Link>
+              <nav className="hero-member-links" aria-label="Get started">
+                <Link href="/get-involved?type=propose_project">Share a project idea <ArrowUpRight size={16} aria-hidden="true"/></Link>
+                <Link href="/member/login">Member sign in <ArrowUpRight size={16} aria-hidden="true"/></Link>
+              </nav>
+            </div>
           </div>
-          <nav className="hero-member-links" aria-label="Get started">
-            <Link href="/get-involved?type=propose_project"><Lightbulb size={17} aria-hidden="true"/>Share a project idea <ArrowRight size={17} aria-hidden="true"/></Link>
-            <Link href="/member/login"><LogIn size={17} aria-hidden="true"/>Member sign in <ArrowRight size={17} aria-hidden="true"/></Link>
-          </nav>
+          <figure className="studio-hero__figure">
+            <div className="studio-hero__frame"><Image className="studio-hero__image" src={image} alt={media?.url === image ? (section.imageAlt || media.alt || "") : ""} fill priority sizes="(max-width:900px) 100vw, 46vw"/></div>
+            <figcaption><span>Fig. 01</span>On the bench</figcaption>
+          </figure>
         </div>
       </section>
       <NextMeeting events={context?.events ?? []}/>

@@ -5,10 +5,15 @@ import { PublicFooter } from '@/components/public/PublicFooter'
 import { AnnouncementBanner } from '@/components/public/AnnouncementBanner'
 import './professional.css'
 import './project-led.css'
+import './studio.css'
+import { Archivo, JetBrains_Mono } from 'next/font/google'
+
+const display = Archivo({ subsets: ['latin'], axes: ['wdth'], variable: '--font-display', display: 'swap' })
+const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono', display: 'swap' })
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [navigation, settings] = await Promise.all([getPublishedNavigation(), getPublicSiteSettings()])
-  return <div className="professional-site">
+  return <div className={`professional-site ${display.variable} ${mono.variable}`}>
     <OrganizationSchema siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oberlin32engineeringsociety.com'} contactEmail={settings.contact.email} socialLinks={settings.social}/>
     <PublicHeader items={navigation} logoSrc={settings.brand.badgeUrl}/>
     <AnnouncementBanner announcement={settings.announcement}/>

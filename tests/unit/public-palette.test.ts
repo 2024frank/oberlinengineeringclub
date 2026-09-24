@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import postcss from 'postcss'
 import { describe, expect, it } from 'vitest'
 
-const styles = ['professional.css', 'project-led.css'].map(name => postcss.parse(readFileSync(`app/(public)/${name}`, 'utf8')))
+const styles = ['professional.css', 'project-led.css', 'studio.css'].map(name => postcss.parse(readFileSync(`app/(public)/${name}`, 'utf8')))
 
 describe('public color system', () => {
   it('defines colors once and uses tokens in component rules', () => {
@@ -39,13 +39,13 @@ describe('public color system', () => {
     })
     const fixture = document.createElement('div')
     fixture.className = 'professional-site'
-    for (const surface of ['cms-section--cardinal', 'hero', 'project-home-hero', 'home-hero', 'directory-hero--image', 'detail-hero--image', 'public-footer']) {
+    for (const surface of ['cms-section--cardinal', 'hero', 'project-home-hero', 'home-hero', 'directory-hero--image', 'detail-hero--image', 'public-footer', 'cta-section cta-section--charcoal']) {
       fixture.innerHTML = `<section class="${surface}"><a href="/projects">Projects</a><button>Join</button><input /><select></select><textarea></textarea><summary>Details</summary></section>`
       for (const control of fixture.querySelectorAll('a, button, input, select, textarea, summary')) {
         expect(selectors.some(selector => control.matches(selector)), `${surface} ${control.tagName}`).toBe(true)
       }
     }
-    fixture.innerHTML = '<section class="cta-section cta-section--charcoal"><a href="/join">Join</a></section>'
+    fixture.innerHTML = '<section class="cta-section cta-section--cream"><a href="/join">Join</a></section>'
     expect(selectors.some(selector => fixture.querySelector('a')!.matches(selector))).toBe(false)
   })
 

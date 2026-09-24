@@ -9,6 +9,7 @@ import { MilestoneMeter } from '@/components/projects/MilestoneMeter'
 import { QuickMilestoneAction } from './workspace/QuickMilestoneAction'
 
 const emptyWork: MemberWork = { mine: [], unclaimed: [], posts: [] }
+const plural = (count: number, one: string, many: string) => count === 1 ? one : many
 
 function headline(work: MemberWork, hasProjects: boolean) {
   const overdue = work.mine.filter(m => isOverdue(m.dueDate, m.status)).length
@@ -20,7 +21,12 @@ function headline(work: MemberWork, hasProjects: boolean) {
 
 export function MemberDashboard({ displayName, summary, teams, clubTeams = [], progress = [], work = emptyWork }: { displayName: string; summary: MemberDashboardSummary; teams: WorkspaceSummary[]; clubTeams?: ClubTeam[]; progress?: ProjectOverview[]; work?: MemberWork }) {
   const hasProjects = teams.length > 0
-  const tasks = <div className="portal-task-grid">
+  const status = [
+    { href: '/member/applications', count: summary.openApplications, label: plural(summary.openApplications, 'application', 'applications') + ' awaiting a decision' },
+    { href: '/member/proposals', count: summary.projectProposals, label: plural(summary.projectProposals, 'project idea', 'project ideas') + ' in review or approved' },
+    { href: '/member/saved', count: summary.saved, label: plural(summary.saved, 'saved item', 'saved items') },
+  ].filter(item => item.count > 0)
+  const tasks = <div className={`portal-task-grid${hasProjects ? ' portal-task-grid--compact' : ''}`}>
     <Link className="portal-task" href="/member/projects"><Search size={24}/><h3>Find a project</h3><p>Explore teams looking for members.</p><span>Browse projects <ArrowRight size={18}/></span></Link>
     <Link className="portal-task" href="/member/proposals?new=1"><Lightbulb size={24}/><h3>Propose an idea</h3><p>Bring a new project to the club.</p><span>Start a proposal <ArrowRight size={18}/></span></Link>
     <Link className="portal-task" href="/member/directory"><Users size={24}/><h3>Find teammates</h3><p>Meet members with shared interests.</p><span>Member directory <ArrowRight size={18}/></span></Link>
@@ -48,7 +54,7 @@ export function MemberDashboard({ displayName, summary, teams, clubTeams = [], p
       <section className="pt-card" aria-labelledby="member-milestones">
         <h2 id="member-milestones">Your milestones</h2>
         {work.mine.length ? <ul className="dash-list">{work.mine.map(m => <li key={m.id}>
-          <div><strong>{m.title}</strong><small><Link href={`/member/teams/${m.projectId}`}>{m.projectTitle}</Link>{m.dueDate && <span className={isOverdue(m.dueDate, m.status) ? 'pt-overdue' : ''}>{isOverdue(m.dueDate, m.status) ? 'Overdue, was due' : 'Due'} {formatDueDate(m.dueDate)}</span>}<span>{milestoneStatusLabels[m.status]}</span></small></div>
+          <div><strong>{m.title}</strong><small><Link href={`/member/teams/${m.projectId}`}>{m.projectTitle}</Link>{m.dueDate && <span>{isOverdue(m.dueDate, m.status) && <span className="pt-pill pt-pill--bad dash-overdue">Overdue</span>}Due {formatDueDate(m.dueDate)}</span>}<span>{milestoneStatusLabels[m.status]}</span></small></div>
           <QuickMilestoneAction projectId={m.projectId} milestoneId={m.id} title={m.title} mode="done"/>
         </li>)}</ul> : <p className="pt-hint">You have no milestones of your own right now.</p>}
         {work.unclaimed.length > 0 && <>
@@ -69,12 +75,13 @@ export function MemberDashboard({ displayName, summary, teams, clubTeams = [], p
       </section>
     </div>}
 
-    {hasProjects && <section className="portal-section" aria-labelledby="member-more"><div className="portal-section-heading"><h2 id="member-more">More to do</h2></div>{tasks}</section>}
-
     <section className="portal-section" aria-labelledby="member-teams"><div className="portal-section-heading"><h2 id="member-teams">Club teams <span>{clubTeams.length}</span></h2><Link href="/member/teams/find">Find a team <ArrowRight size={16}/></Link></div>
       {clubTeams.length > 0 ? <div className="portal-link-list">{clubTeams.map(team => <Link href={`/member/teams/group/${team.id}`} key={team.id}><Users size={20}/><span><strong>{team.name}</strong><small>{team.roster.length} member{team.roster.length === 1 ? '' : 's'}</small></span><ArrowRight size={16}/></Link>)}</div>
         : <div className="portal-empty"><FolderKanban size={24}/><div><h3>No club team yet</h3><p>Club teams are groups of members who work together before or across projects.</p><Link className="portal-text-link" href="/member/teams/new">Create a team</Link></div></div>}
     </section>
-    <section className="portal-section" aria-label="Application and idea status"><div className="portal-summary-links"><Link href="/member/applications"><strong>{summary.openApplications}</strong><span>Applications awaiting a decision</span><ArrowRight size={17}/></Link><Link href="/member/proposals"><strong>{summary.projectProposals}</strong><span>My project ideas</span><ArrowRight size={17}/></Link><Link href="/member/saved"><strong>{summary.saved}</strong><span>Saved items</span><ArrowRight size={17}/></Link></div></section>
+
+    {status.length > 0 && <section className="portal-section" aria-label="Applications, ideas and saved items"><div className="portal-summary-links">{status.map(item => <Link key={item.href} href={item.href}><strong>{item.count}</strong><span>{item.label}</span><ArrowRight size={17}/></Link>)}</div></section>}
+
+    {hasProjects && <section className="portal-section" aria-labelledby="member-more"><div className="portal-section-heading"><h2 id="member-more">More to do</h2></div>{tasks}</section>}
   </main>
 }

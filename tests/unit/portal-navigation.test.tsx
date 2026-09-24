@@ -53,4 +53,13 @@ describe('Portal navigation', () => {
     expect(opener).toHaveAttribute('aria-expanded', 'false')
     expect(opener).toHaveFocus()
   })
+
+  it('shows the unread notification count on the member bell', () => {
+    route.pathname = '/member'
+    const { rerender } = render(<MemberShell member={{ displayName: 'Ada', email: 'ada@example.com' }} unreadNotifications={4}><h1>Home</h1></MemberShell>)
+    expect(screen.getByRole('link', { name: 'Notifications, 4 unread' })).toHaveTextContent('4')
+    rerender(<MemberShell member={{ displayName: 'Ada', email: 'ada@example.com' }}><h1>Home</h1></MemberShell>)
+    expect(screen.getByTitle('Notifications')).toHaveAccessibleName('Notifications')
+    expect(screen.getByTitle('Notifications')).toHaveTextContent('')
+  })
 })

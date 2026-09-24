@@ -36,3 +36,11 @@ Use this secure link to choose a new password for your active Oberlin Engineerin
 ${input.resetUrl}
 
 If you did not request a password reset, you can ignore this email.${signature}`}}
+export function newProjectEmail(input:{memberName:string;projectTitle:string;summary?:string;actionUrl:string}):TransactionalEmailMessage{return{subject:`New OEC project: ${input.projectTitle}`,text:`${hello(input.memberName)}
+
+A new project is on the OEC website: “${input.projectTitle}”.${input.summary?.trim()?`
+
+${input.summary.trim()}`:''}
+
+See the project and ask to join the team here:
+${input.actionUrl}${signature}`}}

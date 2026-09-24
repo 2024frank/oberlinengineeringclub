@@ -5,6 +5,7 @@ import { validatePageForPublish } from '@/lib/page-builder/pageService'
 import { publishPageSnapshot } from '@/lib/publishing/pages'
 import { contentEntityTypes } from '@/lib/cms/contentDrafts'
 import { publishContentSnapshot } from '@/lib/publishing/content'
+import { announcePublishedProjectSafely } from '@/lib/projects/announcements'
 
 export const maxDuration = 60
 export async function GET(request: Request) {
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
   for(const row of rows??[]){
     try{
       if(row.target_type==='page') await publishPageSnapshot(validatePageForPublish(row.payload_snapshot),row.requested_by,null,true)
-      else if(contentEntityTypes.includes(row.target_type)) await publishContentSnapshot(row.target_type,row.target_id,row.payload_snapshot,row.requested_by,null,true)
+      else if(contentEntityTypes.includes(row.target_type)){ await publishContentSnapshot(row.target_type,row.target_id,row.payload_snapshot,row.requested_by,null,true); if(row.target_type==='projects') after(()=>announcePublishedProjectSafely(row.target_id)) }
       else throw new Error('UNSUPPORTED_SCHEDULE_TARGET')
       await admin.from('scheduled_publications').update({processed_at:new Date().toISOString(),failure_message:null}).eq('id',row.id).eq('claim_token',row.claim_token)
       results.push({id:row.id,ok:true})

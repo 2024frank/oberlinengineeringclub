@@ -108,3 +108,7 @@
 }
 .portal-project-heading .portal-status{margin:0 6px 6px 0}
 .portal-project-list .milestone-meter{margin:4px 0 16px}
+.portal-attention{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.portal-task-grid--compact .portal-task{flex-direction:row;align-items:center;gap:14px;padding:16px 18px}.portal-task-grid--compact .portal-task>svg{margin:0;flex-shrink:0}.portal-task-grid--compact .portal-task h3{flex:1;margin:0;font-size:15px}.portal-task-grid--compact .portal-task p{display:none}.portal-task-grid--compact .portal-task>span{width:auto;margin:0;font-size:0}
+.portal-icon-button{position:relative}.portal-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#8d1721;color:#fff;font-size:11px;font-weight:650;line-height:18px;text-align:center}
+@media(max-width:620px){.portal-task-grid--compact .portal-task{display:flex;padding:14px 16px}}

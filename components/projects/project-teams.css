@@ -154,6 +154,7 @@
 .portal-shell .dash-list strong { font-size: 14px; }
 .portal-shell .dash-list small { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 13px; color: var(--portal-muted); }
 .portal-shell .dash-list small a { color: var(--portal-accent); font-weight: 600; }
+.portal-shell .dash-list .dash-overdue { margin-right: 6px; padding: 0 6px; font-size: 11px; }
 .portal-shell .dash-quick { display: grid; justify-items: end; gap: 4px; flex: none; }
 .portal-shell .dash-quick__error { max-width: 200px; font-size: 12px; color: var(--pt-bad); text-align: right; }
 .portal-shell .dash-post-link { justify-self: start; font-size: 13px; font-weight: 600; color: var(--portal-accent); }

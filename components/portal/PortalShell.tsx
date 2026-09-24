@@ -7,7 +7,7 @@ import { ArrowUpRight, Bell, Menu, X } from 'lucide-react'
 import { SignOutButton } from '@/components/auth/SignOutButton'
 import { isPortalItemActive, portalPath, type PortalNavGroup } from '@/lib/navigation/portal'
 
-export function PortalShell({ portal, groups, sidebar, children }: { portal: 'admin' | 'member'; groups: PortalNavGroup[]; sidebar: ReactNode; children: ReactNode }) {
+export function PortalShell({ portal, groups, sidebar, unreadNotifications = 0, children }: { portal: 'admin' | 'member'; groups: PortalNavGroup[]; sidebar: ReactNode; unreadNotifications?: number; children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null), trigger = useRef<HTMLButtonElement>(null)
   const pathname = portalPath(usePathname(), portal)
@@ -35,7 +35,7 @@ export function PortalShell({ portal, groups, sidebar, children }: { portal: 'ad
       <header className="portal-topbar">
         <button className="portal-menu-button" ref={trigger} type="button" aria-label={`Open ${portal} navigation`} aria-expanded={open} aria-controls={`${portal}-mobile-navigation`} onClick={() => setOpen(true)}><Menu size={21}/></button>
         <div className="portal-location"><span>{portal === 'admin' ? 'Administration' : 'Member workspace'}</span><strong>{current?.label ?? (portal === 'admin' ? 'Overview' : 'Dashboard')}</strong></div>
-        <div className="portal-topbar-actions">{portal === 'member' && <Link className="portal-icon-button" href="/member/notifications" aria-label="Notifications" title="Notifications"><Bell size={19}/></Link>}<a className="portal-public-link" href={process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oberlin32engineeringsociety.com/'} target="_blank" rel="noreferrer" aria-label="View club website"><span>Club website</span><ArrowUpRight size={17}/></a><SignOutButton portal={portal}/></div>
+        <div className="portal-topbar-actions">{portal === 'member' && <Link className="portal-icon-button" href="/member/notifications" aria-label={unreadNotifications ? `Notifications, ${unreadNotifications} unread` : 'Notifications'} title="Notifications"><Bell size={19}/>{unreadNotifications > 0 && <span className="portal-badge" aria-hidden="true">{unreadNotifications > 99 ? '99+' : unreadNotifications}</span>}</Link>}<a className="portal-public-link" href={process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oberlin32engineeringsociety.com/'} target="_blank" rel="noreferrer" aria-label="View club website"><span>Club website</span><ArrowUpRight size={17}/></a><SignOutButton portal={portal}/></div>
       </header>
       <div id="portal-content" tabIndex={-1}>{children}</div>
     </div>

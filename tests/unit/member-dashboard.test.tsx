@@ -22,7 +22,8 @@ it('leads with the member’s own work, progress, and team news', () => {
   expect(screen.getByText('You own 1 open milestone, and one is overdue.')).toBeInTheDocument()
   expect(screen.getByRole('img', { name: '1 of 4 milestones done' })).toBeInTheDocument()
   const mine = screen.getByRole('region', { name: 'Your milestones' })
-  expect(within(mine).getByText('Overdue, was due Jan 2')).toBeInTheDocument()
+  expect(within(mine).getByText('Overdue')).toBeInTheDocument()
+  expect(within(mine).getByText('Due Jan 2')).toBeInTheDocument()
   expect(within(mine).getByRole('button', { name: "Take Print a calibration cube" })).toBeInTheDocument()
   const feed = screen.getByRole('region', { name: 'Latest from your teams' })
   expect(within(feed).getByText('Blocker')).toBeInTheDocument()
@@ -37,4 +38,18 @@ it('marks a milestone done in one click and refreshes the dashboard', async () =
   await userEvent.click(screen.getByRole('button', { name: 'Mark Tune the hotend done' }))
   expect(fetchMock).toHaveBeenCalledWith(`/api/member/projects/${project}`, expect.objectContaining({ body: JSON.stringify({ action: 'milestone-status', milestoneId: work.mine[0].id, status: 'DONE' }) }))
   expect(refresh).toHaveBeenCalled()
+})
+
+it('shows only non-zero application, idea and saved counts, with correct plurals', () => {
+  render(<MemberDashboard displayName="Dana Ruiz" summary={{ ...summary, openApplications: 1, saved: 3 }} teams={teams} progress={progress} work={work}/>)
+  const status = screen.getByRole('region', { name: 'Applications, ideas and saved items' })
+  expect(within(status).getByRole('link', { name: /1 application awaiting a decision/ })).toHaveAttribute('href', '/member/applications')
+  expect(within(status).getByRole('link', { name: /3 saved items/ })).toHaveAttribute('href', '/member/saved')
+  expect(within(status).queryByText(/project idea/)).not.toBeInTheDocument()
+})
+
+it('leaves out the counts row for a member with nothing pending', () => {
+  render(<MemberDashboard displayName="Dana Ruiz" summary={summary} teams={[]}/>)
+  expect(screen.queryByRole('region', { name: 'Applications, ideas and saved items' })).not.toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Start with a project' })).toBeInTheDocument()
 })

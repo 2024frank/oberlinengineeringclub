@@ -33,7 +33,7 @@ export function ProjectCards({
   projects: ProjectCardData[];
   searchable?: boolean;
   filters?: ProjectFilterDefaults;
-  layout?: 'grid' | 'list' | 'featured';
+  layout?: 'grid' | 'list' | 'featured' | 'magazine';
 }) {
   const [query, setQuery] = useState("");
   const ready = useFormReady();
@@ -94,13 +94,13 @@ export function ProjectCards({
                   src={p.image.url}
                   alt={p.image.alt || p.title}
                   fill
-                  sizes={layout === 'list' ? '(max-width:600px) 105px,(max-width:950px) 160px,(max-width:1150px) 180px,210px' : layout === 'featured' && index === 0 ? '(max-width:1000px) 90vw,800px' : '(max-width:600px) 90vw,(max-width:1000px) 44vw,390px'}
+                  sizes={layout === 'magazine' ? (index === 0 ? '(max-width:760px) 100vw,50vw' : '(max-width:760px) 50vw,25vw') : layout === 'list' ? '(max-width:600px) 105px,(max-width:950px) 160px,(max-width:1150px) 180px,210px' : layout === 'featured' && index === 0 ? '(max-width:1000px) 90vw,800px' : '(max-width:600px) 90vw,(max-width:1000px) 44vw,390px'}
                 />
               </div>
             )}
             <div className="project-tile__body">
               <span className="project-discipline">
-                {[...p.disciplines, p.difficulty].filter(Boolean).map((value) => capitalize(String(value))).join(", ")}
+                {[p.disciplines[0], p.difficulty].filter(Boolean).map((value) => capitalize(String(value))).join(" · ")}
               </span>
               <h3>{p.title}</h3>
               <p>{p.summary}</p>

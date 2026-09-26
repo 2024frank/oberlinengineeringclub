@@ -100,7 +100,7 @@ export function ProjectCards({
             )}
             <div className="project-tile__body">
               <span className="project-discipline">
-                {[...p.disciplines, p.difficulty].filter(Boolean).map((value) => capitalize(String(value))).join(", ")}
+                {[p.disciplines[0], p.difficulty].filter(Boolean).map((value) => capitalize(String(value))).join(" · ")}
               </span>
               <h3>{p.title}</h3>
               <p>{p.summary}</p>

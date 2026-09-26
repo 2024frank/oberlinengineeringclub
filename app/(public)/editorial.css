@@ -111,4 +111,89 @@
   .professional-site .project-grid--magazine .project-tile:first-child .project-tile__image { margin-inline: -16px; }
   .professional-site .discipline-grid { grid-template-columns: 1fr; gap: 28px; }
   .professional-site .cta-section { padding-block: 80px; }
+  .professional-site .directory-hero { padding-block: 40px 24px; }
+  .professional-site .project-detail-heading { padding-block: 32px 24px; }
+  .professional-site .project-stage-track { grid-template-columns: 1fr; margin-top: 28px; }
+  .professional-site .project-stage-track li { padding: 10px 0 10px 12px; border-bottom: 1px solid var(--oec-border); }
+  .professional-site .project-stage-track li.is-current { box-shadow: inset 3px 0 0 var(--oec-cardinal); }
+  .professional-site .more-projects { padding-block: 64px; }
 }
+
+/* One grade and one crop for every photo, so AI covers, stock and club shots read as a set */
+.professional-site :is(.project-tile__image, .project-cover, .home-band, .photo-hero, .home-hero, .directory-hero--image, .detail-hero--image) img {
+  filter: saturate(0.78) contrast(1.06) brightness(0.97) sepia(0.06);
+}
+.professional-site .project-tile__image { background: var(--oec-charcoal); }
+.professional-site .project-tile__image img { object-fit: cover; object-position: center 45%; transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.6s ease; }
+.professional-site .project-tile:hover .project-tile__image img { transform: scale(1.045); filter: saturate(1) contrast(1.04); }
+.professional-site .project-cover { margin: 0 0 40px; overflow: hidden; background: var(--oec-charcoal); aspect-ratio: 16 / 9; position: relative; }
+.professional-site .project-cover img { width: 100%; height: 100%; max-height: none; object-fit: cover; border-radius: 0; }
+
+/* Square corners everywhere the old theme used pills and rounded boxes */
+.professional-site :is(.button, .header-join, .public-menu, .save-button, .search-field, input, select, textarea, .tag-row span, .project-detail-skills li, .detail-aside, .join-progress button > span, .interest-choices label, .expanded-navigation a) { border-radius: 0; }
+.professional-site .header-join { background: var(--oec-cardinal); border-color: var(--oec-cardinal); padding-inline: 20px; min-height: 44px; gap: 8px; }
+.professional-site .header-join:hover { background: var(--oec-charcoal); border-color: var(--oec-charcoal); }
+.professional-site .public-menu { border: 1px solid var(--oec-charcoal); width: 44px; height: 44px; }
+.professional-site .button { padding-inline: 24px; }
+
+/* Motion is pure CSS: scroll-linked where the browser supports it, static elsewhere */
+@keyframes oec-drift { from { transform: scale(1.02); } to { transform: scale(1.1) translate3d(-1.2%, -1%, 0); } }
+@keyframes oec-rise { from { opacity: 0; transform: translate3d(0, 36px, 0); } to { opacity: 1; transform: none; } }
+@keyframes oec-open { from { clip-path: inset(10% 7% 10% 7%); } to { clip-path: inset(0); } }
+@keyframes oec-header { to { box-shadow: 0 1px 0 var(--oec-charcoal); } }
+@media (prefers-reduced-motion: no-preference) {
+  .professional-site .photo-hero__image { animation: oec-drift 24s ease-out both; }
+  @supports (animation-timeline: view()) {
+    .professional-site :is(.section-heading, .home-statement__lead, .project-tile, .discipline-grid article, .event-planning > *, .cta-section .shell > *, .directory-hero .shell > *, .project-detail-heading .shell > *, .detail-body .prose > *, .more-projects__heading) {
+      animation: oec-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 55%;
+    }
+    .professional-site :is(.project-tile, .discipline-grid article):nth-child(4n+2) { animation-range: entry 6% entry 61%; }
+    .professional-site :is(.project-tile, .discipline-grid article):nth-child(4n+3) { animation-range: entry 12% entry 67%; }
+    .professional-site :is(.project-tile, .discipline-grid article):nth-child(4n+4) { animation-range: entry 18% entry 73%; }
+    .professional-site .home-band { animation: oec-open linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+    .professional-site .public-header { animation: oec-header linear both; animation-timeline: scroll(root); animation-range: 0 120px; }
+  }
+}
+
+/* Inner page heads: same scale and rule as the home */
+.professional-site .directory-hero { padding-block: 88px 56px; border-bottom: 0; }
+.professional-site .directory-hero .shell { border-top: 3px solid var(--oec-charcoal); padding-top: 22px; }
+.professional-site .directory-hero h1 { font-size: clamp(56px, 9vw, 148px); line-height: 0.9; letter-spacing: -0.05em; margin: 0 0 28px; }
+.professional-site .directory-hero p:not(.eyebrow) { font-family: var(--display); font-size: clamp(20px, 2vw, 28px); line-height: 1.25; font-weight: 500; letter-spacing: -0.02em; color: var(--oec-body); max-width: 36ch; }
+.professional-site .home-hero h1 { font-family: var(--display); font-size: clamp(52px, 8vw, 128px); line-height: 0.9; letter-spacing: -0.05em; }
+.professional-site :is(.detail-hero, .project-detail-heading) h1 { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 6.4vw, 104px); line-height: 0.94; letter-spacing: -0.045em; max-width: 16ch; }
+.professional-site .project-detail-heading { padding-block: 56px 48px; border-bottom: 0; }
+.professional-site .project-detail-heading p:not(.eyebrow) { font-family: var(--display); font-size: clamp(20px, 1.9vw, 26px); line-height: 1.3; font-weight: 500; letter-spacing: -0.015em; color: var(--oec-body); max-width: 44ch; }
+.professional-site .breadcrumb { text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; font-weight: 600; }
+.professional-site .tag-row { gap: 0; }
+.professional-site .tag-row span { border: 0; background: none; padding: 0; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; font-weight: 600; color: var(--oec-muted); }
+.professional-site .tag-row span + span::before { content: "/"; margin: 0 10px; color: var(--oec-border); }
+
+/* Project stage as a numbered row under a hard rule */
+.professional-site .project-stage-track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin-top: 40px; padding: 0; border: 0; border-top: 1px solid var(--oec-charcoal); list-style: none; }
+.professional-site .project-stage-track li { border: 0; padding: 14px 12px 0 0; font-size: 14px; color: var(--oec-muted); }
+.professional-site .project-stage-track li::before { display: none; }
+.professional-site .project-stage-track li.is-current { color: var(--oec-charcoal); font-weight: 700; box-shadow: inset 0 3px 0 var(--oec-cardinal); }
+.professional-site .project-stage-track li.is-done { color: var(--oec-charcoal); }
+
+.professional-site .detail-body .prose h2 { font-size: clamp(28px, 2.6vw, 38px); letter-spacing: -0.03em; border-top: 1px solid var(--oec-charcoal); padding-top: 16px; margin-top: 48px; }
+.professional-site .detail-body .prose p { font-size: 17px; line-height: 1.7; max-width: 64ch; }
+.professional-site .project-detail-skills li { border: 0; border-bottom: 1px solid var(--oec-border); background: none; padding: 12px 0; }
+.professional-site .detail-aside { border-top: 3px solid var(--oec-charcoal); }
+.professional-site .more-projects { background: var(--oec-cream); padding-block: 96px; }
+.professional-site .more-projects h2 { font-size: clamp(36px, 4vw, 60px); }
+
+/* Projects directory: quiet search row, then a three-column wall of tiles */
+.professional-site .project-search { border: 0; border-bottom: 1px solid var(--oec-charcoal); padding: 0 0 12px; gap: 16px; }
+.professional-site .project-search .search-field { border: 0; background: none; padding-left: 0; }
+.professional-site .project-search .search-field input { font-size: 18px; }
+.professional-site .project-search select { border: 0; background-color: transparent; font-weight: 600; }
+@media (min-width: 760px) {
+  .professional-site .directory .project-grid:not(.project-grid--magazine),
+  .professional-site .more-projects .project-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px 24px; }
+}
+.professional-site .project-grid:not(.project-grid--magazine) .project-tile { border: 0; padding: 0; background: none; display: flex; flex-direction: column; }
+.professional-site .project-grid:not(.project-grid--magazine) .project-tile__body { padding: 16px 0 0; }
+.professional-site .project-grid:not(.project-grid--magazine) .project-tile h3 { font-size: 24px; line-height: 1.12; margin: 8px 0 8px; }
+.professional-site .project-grid:not(.project-grid--magazine) .project-tile p { font-size: 15px; line-height: 1.55; color: var(--oec-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.professional-site .project-grid:not(.project-grid--magazine) .project-tile__footer { border: 0; padding: 10px 0 0; margin-top: auto; }

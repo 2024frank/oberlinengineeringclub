@@ -71,13 +71,14 @@
 
 /* Areas of interest as a numbered index */
 .professional-site .discipline-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px 32px; }
-.professional-site .discipline-grid article { display: block; border-top: 1px solid var(--oec-charcoal); padding-top: 16px; }
+.professional-site .discipline-grid article { display: block; border: 0; border-top: 1px solid var(--oec-charcoal); padding: 16px 0 0; }
 .professional-site .discipline-grid svg { display: none; }
 .professional-site .discipline-index { display: block; font: 700 13px/1 var(--display); color: var(--oec-cardinal); letter-spacing: 0.04em; margin-bottom: 18px; font-variant-numeric: tabular-nums; }
 .professional-site .discipline-grid h3 { font-size: 28px; line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.03em; }
 .professional-site .discipline-grid p { font-size: 15px; color: var(--oec-muted); }
 
 /* Events */
+.professional-site .event-planning { border: 0; background: none; padding: 0; }
 .professional-site .event-planning > p { font-family: var(--display); font-size: clamp(22px, 2.2vw, 30px); line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; color: var(--oec-charcoal); max-width: 30ch; }
 .professional-site .event-planning article { border: 0; border-top: 1px solid var(--oec-charcoal); border-radius: 0; background: none; padding: 16px 0 0; }
 .professional-site .event-planning h3 { font-size: 24px; }

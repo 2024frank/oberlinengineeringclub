@@ -43,6 +43,11 @@ export function HeroSection({
           </div>
         </div>
       </section>
+      <figure className="home-figure">
+        <div className="shell">
+          <Image src="https://qaudokydctziaoakvkyv.supabase.co/storage/v1/object/public/oec-media/site/home-workshop-wide.jpg" alt="Three students in safety glasses assembling a machine at a workshop bench" width={1125} height={750} sizes="(max-width: 1320px) 100vw, 1320px"/>
+        </div>
+      </figure>
     </>;
   }
   const image = media?.url;

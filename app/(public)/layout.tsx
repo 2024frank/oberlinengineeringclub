@@ -5,6 +5,7 @@ import { PublicFooter } from '@/components/public/PublicFooter'
 import { AnnouncementBanner } from '@/components/public/AnnouncementBanner'
 import './professional.css'
 import './project-led.css'
+import './editorial.css'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [navigation, settings] = await Promise.all([getPublishedNavigation(), getPublicSiteSettings()])
